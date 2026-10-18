@@ -16,31 +16,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  #INFO: Eval only, no build — fails in seconds on a syntax/option error instead of after a long build
+  #INFO: Eval + build checks only (not the systems). No --no-build: it forbids IFD, and the claude-code HM module reads fetched plugin dirs at eval time
   check:
     runs-on: nixos
     steps:
       - uses: actions/checkout@v4
-      - run: nix flake check --no-build --print-build-logs
+      - run: nix flake check --print-build-logs
       # TODO: fail if flake.nix is stale vs the modules (`nix run .#write-flake` then `git diff --exit-code flake.nix`)
 
   build:
+    needs: check
     runs-on: nixos
     strategy:
       fail-fast: false
       matrix:
-        #INFO: Keep in sync with `fleet` in modules/nix/den/den.nix (hosts + "user@host" homes)
+        #INFO: Keep in sync with the hosts in `fleet` (modules/nix/den/den.nix). HM is built inside each toplevel
         include:
           - target: laptop
             attr: nixosConfigurations.laptop.config.system.build.toplevel
           - target: ideapad
             attr: nixosConfigurations.ideapad.config.system.build.toplevel
-          - target: yoann@laptop
-            attr: homeConfigurations."yoann@laptop".activationPackage
-          - target: audrey@laptop
-            attr: homeConfigurations."audrey@laptop".activationPackage
-          - target: maria@ideapad
-            attr: homeConfigurations."maria@ideapad".activationPackage
     env:
       GCROOT_DIR: /home/runner/gcroots/ci
       KEEP: 3
