@@ -12,7 +12,6 @@ _: {
         lt = "eza -T --level=2";
         lr = "eza -la --sort=modified --time-style=relative";
         cat = "bat";
-        rebuild = "$NH_OS_FLAKE/scripts/rebuild.sh";
         ale = "alejandra --exclude flake.nix $NH_OS_FLAKE";
         x = "exit";
       };

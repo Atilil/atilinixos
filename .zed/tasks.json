@@ -19,7 +19,7 @@
   },
   {
     "label": "NixOS Switch",
-    "command": "rebuild",
+    "command": "nh os switch",
     "cwd": "$ZED_WORKTREE_ROOT",
     "reveal": "no_focus",
   },
