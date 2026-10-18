@@ -1,0 +1,9 @@
+# Dim inactive panes (bundled shader)
+startgroup
+    animation_step 0
+    var float HIGHLIGHT_INTENSITY 0
+    var float BORDER_WIDTH 0
+    var float INACTIVE_DIM 0.80
+    var bool DIM_CENTRAL_AREA_ONLY true
+    shaders focus-highlight
+endgroup

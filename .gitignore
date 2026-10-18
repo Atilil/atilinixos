@@ -1,0 +1,20 @@
+# nix build outputs
+result
+result-*
+
+# build-vm disk images
+*.qcow2
+
+# Claude Code local hookify rules
+.claude/*.local.md
+
+# Claude Code: personal settings and agent worktrees
+.claude/settings.local.json
+.claude/worktrees/
+
+# Key material and env files that must never be committed in clear
+*.key
+*.pem
+*.p12
+.env
+.env.*

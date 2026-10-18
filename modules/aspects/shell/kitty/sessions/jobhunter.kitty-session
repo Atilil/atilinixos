@@ -1,0 +1,16 @@
+new_tab [Jobhunter]
+layout splits
+enabled_layouts splits,stack
+cd /home/yoann/Documents/jobhunter
+
+launch --var=IS_NVIM=1 --title=jobhunter-nvim vim
+
+launch --location=vsplit --bias=40 claude --continue
+
+focus_matching_window title:jobhunter-nvim
+
+# File manager tab (not focused)
+new_tab [Yazi]
+cd /home/yoann/Documents/jobhunter
+
+launch --title=jobhunter-yazi yazi

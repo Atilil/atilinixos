@@ -1,0 +1,28 @@
+new_tab [Nixos]
+layout splits
+enabled_layouts splits,stack
+cd /home/yoann/Projets/nixos
+
+launch --var=IS_NVIM=1 --title=nixos-nvim vim
+
+launch --location=vsplit --bias=20 claude --continue
+
+focus_matching_window title:nixos-nvim
+
+launch --location=hsplit --bias=20
+
+launch --location=vsplit --bias=50
+
+focus_matching_window title:nixos-nvim
+
+# Git tab (not focused: the first tab stays active)
+new_tab [Lazygit]
+cd /home/yoann/Projets/nixos
+
+launch --title=nixos-lazygit lazygit
+
+# File manager tab (not focused)
+new_tab [Yazi]
+cd /home/yoann/Projets/nixos
+
+launch --title=nixos-yazi yazi

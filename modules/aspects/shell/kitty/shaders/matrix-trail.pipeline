@@ -1,0 +1,24 @@
+# Stages: 0 glow -> a, 1 a -> persist, 2 draw runes
+textures a persist
+
+startgroup
+    animation_start cursor-trail-move
+    animation_stop 700
+    animation_step 16
+    var int STAGE 0
+    shaders matrix-trail
+    output_texture a
+endgroup
+
+startgroup
+    attach
+    var int STAGE 1
+    shaders matrix-trail
+    output_texture persist
+endgroup
+
+startgroup
+    attach
+    var int STAGE 2
+    shaders matrix-trail
+endgroup

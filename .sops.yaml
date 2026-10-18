@@ -1,0 +1,47 @@
+# INFO:────────────────────────────────────────────────────────
+# Add a new machine (via SSH host key):
+#   1. Get the age key derived from the SSH host key:
+#      nix-shell -p ssh-to-age --run "ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub"
+#   2. Add the public key below (ex: &serveur age1xxx...)
+#   3. Add the anchor in key_groups (ex: - *serveur)
+#   4. Re-encrypt secrets for all keys:
+#      sops updatekeys modules/nix/sops/secrets.yaml
+#INFO:────────────────────────────────────────────────────────
+# Add a new user (via age key):
+#   1. Generate a key pair on the user's machine:
+#      age-keygen -o ~/.config/sops/age/keys.txt
+#   2. Add the public key below (ex: &username age1xxx...)
+#   3. Add the anchor in the relevant key_groups
+#   4. Re-encrypt secrets for all keys:
+#      sops updatekeys modules/nix/sops/secrets.yaml
+# ────────────────────────────────────────────────────────────
+keys:
+  - &yoann age1n70vtuvlqdlacqa2x93h7kpee2wv8cx9ceqjr75pur4mmv7mg40syvs9w0
+  - &laptop age1ep0kwphknp4x49g8g7vm4yqkyw67ynz36z29rq38erkhp93qz3tqg0dz5m
+  - &ideapad age1h2x3cy202kgpqdn4sqy60ad29rmkl7jhxrjcgymmn90qgm47ypgsta3fhl
+  - &audrey age1r32slraxueqkqtmy6agl3uy2rcsr2vm08rulnzg7wyyx652v0fdssm2n4m
+
+creation_rules:
+  - path_regex: modules/nix/sops/.*\.yaml$
+    key_groups:
+      - age:
+          - *yoann
+          - *laptop
+
+  - path_regex: modules/users/yoann/sops/.*\.yaml$
+    key_groups:
+      - age:
+          - *yoann
+          - *laptop
+
+  - path_regex: modules/users/audrey/sops/.*\.yaml$
+    key_groups:
+      - age:
+          - *audrey
+          - *laptop
+
+  - path_regex: modules/hosts/ideapad/sops/.*\.yaml$
+    key_groups:
+      - age:
+          - *yoann
+          - *ideapad

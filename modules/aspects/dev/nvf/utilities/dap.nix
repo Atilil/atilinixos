@@ -1,0 +1,8 @@
+_: {
+  den.aspects.nvf.homeManager = _: {
+    programs.nvf.settings.vim.debugger.nvim-dap = {
+      enable = true;
+      ui.enable = true;
+    };
+  };
+}

@@ -1,0 +1,28 @@
+new_tab [Infra/Packer]
+layout splits
+enabled_layouts splits,stack
+cd /home/yoann/Projets/infra/packer
+
+launch --var=IS_NVIM=1 --title=infra-packer-nvim vim
+
+launch --location=vsplit --bias=20 claude --continue
+
+focus_matching_window title:infra-packer-nvim
+
+launch --location=hsplit --bias=20
+
+launch --location=vsplit --bias=50
+
+focus_matching_window title:infra-packer-nvim
+
+# Git tab (not focused: the first tab stays active)
+new_tab [Lazygit]
+cd /home/yoann/Projets/infra/packer
+
+launch --title=infra-packer-lazygit lazygit
+
+# File manager tab (not focused)
+new_tab [Yazi]
+cd /home/yoann/Projets/infra/packer
+
+launch --title=infra-packer-yazi yazi

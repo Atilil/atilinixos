@@ -1,0 +1,15 @@
+snippet km Keymap nvf
+  {
+    key = "$1";
+    mode = ["$2"];
+    action = "$3";
+    desc = "$4";
+    silent = true;
+  }
+
+snippet plg Plugin nvf
+  { ... }: {
+    programs.nvf.settings.vim = {
+      $1
+    };
+  }

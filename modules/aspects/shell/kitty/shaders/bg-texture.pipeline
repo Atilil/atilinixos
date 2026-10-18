@@ -1,0 +1,5 @@
+# Static, no animation
+startgroup
+    animation_step 0
+    shaders bg-texture
+endgroup

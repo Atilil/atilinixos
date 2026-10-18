@@ -1,0 +1,54 @@
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -24,29 +24,10 @@
+ User says: "pii check", "scan for pii", "check for secrets", "pre-publish audit", /pii-check.
+ Also trigger when: user is about to `git push` a previously private repo, or asks "is it safe to make this public?".
+ 
+-## Prerequisites — install git-filter-repo if needed
++## Prerequisites — git-filter-repo (NixOS)
+ 
+-Before running any step that rewrites history, check whether `git-filter-repo` is available:
+-
+-```bash
+-# Pinned to v2.47.0 — update VERSION and EXPECTED_SHA together when upgrading
+-VERSION="v2.47.0"
+-EXPECTED_SHA="67447413e273fc76809289111748870b6f6072f08b17efe94863a92d810b7d94"
+-DEST="/tmp/git-filter-repo"
+-
+-if ! python3 "$DEST" --version 2>/dev/null; then
+-  curl -sL "https://raw.githubusercontent.com/newren/git-filter-repo/${VERSION}/git-filter-repo" -o "$DEST"
+-  ACTUAL_SHA=$(sha256sum "$DEST" | awk '{print $1}')
+-  if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+-    echo "ABORT: git-filter-repo checksum mismatch (got $ACTUAL_SHA)" >&2
+-    rm -f "$DEST"
+-    exit 1
+-  fi
+-  chmod +x "$DEST"
+-fi
+-```
+-
+-Use `python3 /tmp/git-filter-repo` for all subsequent calls — do NOT try `apt`, `pip`, or `pip3` first; they require sudo or a venv and fail silently in WSL. The curl approach is always reliable.
++Never download or install anything. Run it ephemerally from nixpkgs: `nix run nixpkgs#git-filter-repo -- <args>`.
++For a first publication prefer a fresh orphan branch over rewriting history.
+ 
+ > After running `git filter-repo`, it removes the `origin` remote automatically. Re-add it before pushing:
+ > ```bash
+@@ -63,17 +44,7 @@
+ which gitleaks && gitleaks detect --source . 2>/dev/null   # includes git history
+ ```
+ 
+-If gitleaks is not installed, tell the user:
+-> gitleaks is not installed. For full coverage, install it:
+-> - **Mac**: `brew install gitleaks`
+-> - **Windows (native)**: `winget install gitleaks`
+-> - **Linux / WSL**: download the pre-built binary:
+->   ```bash
+->   VER=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | tr -d v)
+->   curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${VER}/gitleaks_${VER}_linux_x64.tar.gz" \
+->     | tar -xz -C /tmp gitleaks && sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+->   ```
+-> Continuing with manual scan — install it before going public.
++If gitleaks is not on PATH, run it ephemerally: `nix run nixpkgs#gitleaks -- detect --source .` (never install binaries or use sudo).
+ 
+ Parse gitleaks output; include any findings in the report. Do not stop — continue with manual checks below regardless.
+ 

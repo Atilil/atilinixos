@@ -1,0 +1,68 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # TODO: pick one
+  # schedule:
+  #   - cron: "0 5 * * 1"   # weekly rebuild, catches upstream breakage
+  # A flake.lock bump is better handled by a separate workflow that opens a PR
+  # (nix flake update + create-pull-request); this one then builds the PR.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  #INFO: Eval only, no build — fails in seconds on a syntax/option error instead of after a long build
+  check:
+    runs-on: nixos
+    steps:
+      - uses: actions/checkout@v4
+      - run: nix flake check --no-build --print-build-logs
+      # TODO: fail if flake.nix is stale vs the modules (`nix run .#write-flake` then `git diff --exit-code flake.nix`)
+
+  build:
+    runs-on: nixos
+    strategy:
+      fail-fast: false
+      matrix:
+        #INFO: Keep in sync with `fleet` in modules/nix/den/den.nix (hosts + "user@host" homes)
+        include:
+          - target: laptop
+            attr: nixosConfigurations.laptop.config.system.build.toplevel
+          - target: ideapad
+            attr: nixosConfigurations.ideapad.config.system.build.toplevel
+          - target: yoann@laptop
+            attr: homeConfigurations."yoann@laptop".activationPackage
+          - target: audrey@laptop
+            attr: homeConfigurations."audrey@laptop".activationPackage
+          - target: maria@ideapad
+            attr: homeConfigurations."maria@ideapad".activationPackage
+    env:
+      GCROOT_DIR: /home/runner/gcroots/ci
+      KEEP: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Plan (built vs substituted)
+        run: nix build --dry-run '.#${{ matrix.attr }}'
+
+      #INFO: Harmonia serves mouse's store as is: a gcroot is what keeps a build in the cache.
+      #      PR builds get none, so the next GC drops them.
+      - name: Build
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            nix build --print-build-logs --no-link '.#${{ matrix.attr }}'
+          else
+            mkdir -p "$GCROOT_DIR"
+            nix build --print-build-logs \
+              --out-link "$GCROOT_DIR/${{ matrix.target }}-${{ github.run_id }}" '.#${{ matrix.attr }}'
+            nix path-info -Sh "$GCROOT_DIR/${{ matrix.target }}-${{ github.run_id }}"
+          fi
+
+      - name: Keep the last builds only
+        if: github.event_name != 'pull_request'
+        run: ls -1t "$GCROOT_DIR/${{ matrix.target }}-"* | tail -n +$((KEEP + 1)) | xargs -r rm -f

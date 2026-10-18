@@ -1,0 +1,7 @@
+startgroup
+    animation_start tab-change
+    animation_stop 160
+    animation_curve ease-out
+    animation_step 8
+    shaders tab-slide
+endgroup

@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Git Commit & Push",
+    "command": "git add $ZED_FILE && git commit -m \"$ZED_FILENAME updated\" && git push",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "no_focus",
+  },
+  {
+    "label": "NixOS Check",
+    "command": "nix eval .#nixosConfigurations.laptop.config.system.build.toplevel",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "no_focus",
+  },
+  {
+    "label": "NixOS dry-run",
+    "command": "nh os switch --dry",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "no_focus",
+  },
+  {
+    "label": "NixOS Switch",
+    "command": "rebuild",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "no_focus",
+  },
+  {
+    "label": "Flake Update",
+    "command": "nh os switch --update",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "no_focus",
+  }
+]
