@@ -81,3 +81,12 @@ jobs:
           for host in $HOSTS; do
             ls -1t "$GCROOT_DIR/$host-"* | tail -n +$((KEEP + 1)) | xargs -r rm -f
           done
+
+      - name: Alert on failure
+        if: failure()
+        env:
+          APPRISE_URL: ${{ secrets.APPRISE_URL }}
+        run: |
+          curl -sf -X POST -H "Content-Type: application/json" \
+            -d '{"title":"NixOS deploy - ERREUR","body":"Run #${{ forgejo.run_number }} en échec : ${{ forgejo.server_url }}/${{ forgejo.repository }}/actions/runs/${{ forgejo.run_number }}","tag":"infra-error"}' \
+            "$APPRISE_URL"

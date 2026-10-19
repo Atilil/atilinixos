@@ -1,6 +1,6 @@
 _: {
   den.aspects.core = {
-    os = _: {
+    os = {pkgs, ...}: {
       time.timeZone = "Europe/Paris";
       i18n.defaultLocale = "fr_FR.UTF-8";
 
@@ -62,6 +62,8 @@ _: {
         # The module already adds --refresh and --flake.
         flags = ["--print-build-logs"];
         operation = "boot";
+        # Channels only: with a flake it just logs a warning.
+        upgrade = false;
         dates = "daily";
         randomizedDelaySec = "45min";
         runGarbageCollection = true;
@@ -79,7 +81,42 @@ _: {
         unitConfig = {
           StartLimitIntervalSec = "3h";
           StartLimitBurst = 3;
+          # Merges with the module's own OnSuccess (nix-gc.service), both run after a success.
+          OnSuccess = ["nixos-upgrade-notify.service"];
         };
+      };
+
+      # Tells graphical users a new system waits for a reboot, once per pending generation.
+      systemd.services.nixos-upgrade-notify = {
+        description = "Notify users of a pending NixOS generation";
+        serviceConfig = {
+          Type = "oneshot";
+          StateDirectory = "nixos-upgrade-notify";
+        };
+        path = [pkgs.coreutils pkgs.systemd pkgs.util-linux pkgs.libnotify];
+        script = ''
+          state=/var/lib/nixos-upgrade-notify/last
+          new=$(readlink -f /nix/var/nix/profiles/system)
+          [ "$new" = "$(readlink -f /run/booted-system)" ] && exit 0
+          [ "$new" = "$(cat "$state" 2>/dev/null)" ] && exit 0
+          users=$(loginctl list-sessions --no-legend | while read -r id _; do
+            type=$(loginctl show-session "$id" -p Type --value)
+            case "$type" in wayland | x11) ;; *) continue ;; esac
+            echo "$(loginctl show-session "$id" -p User --value) $(loginctl show-session "$id" -p Name --value)"
+          done | sort -u)
+          sent=0
+          while read -r uid name; do
+            # Real users only: the greeter also runs a graphical session under a system account.
+            [ -n "$uid" ] && [ "$uid" -ge 1000 ] || continue
+            # runuser plus the user bus path needs no polkit and no user manager lookup.
+            if runuser -u "$name" -- env "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" \
+              notify-send -a NixOS "Mise à jour installée" "Elle sera appliquée au prochain redémarrage."; then
+              sent=1
+            fi
+          done <<< "$users"
+          # Unannounced until someone actually saw it: the next daily run retries.
+          if [ "$sent" = 1 ]; then echo "$new" > "$state"; fi
+        '';
       };
 
       # Read-only deploy key for the private forge repo; root only, since IdentityFile adds up for every user.
