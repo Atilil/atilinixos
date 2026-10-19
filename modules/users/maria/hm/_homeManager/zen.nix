@@ -1,17 +1,10 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: let
+_: let
   # Bitwarden extension ID on Firefox
   bitwardenFirefoxId = "{446900e4-71c2-419f-a6a7-df9c091e268b}";
-  zenFirefoxVersion = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.beta-unwrapped.firefoxVersion;
-  zenLangpackFr = pkgs.fetchurl {
-    url = "https://ftp.mozilla.org/pub/firefox/releases/${zenFirefoxVersion}/linux-x86_64/xpi/fr.xpi";
-    hash = "sha256-sFjPRgw3WTIWo08TFkXTaZ2YOqyHtMPPhXnPHQATIZQ="; # Firefox 158.0
-  };
 in {
-  browser.zen.extraPolicies = {
+  programs.zen-browser.languagePacks = ["fr"];
+
+  programs.zen-browser.policies = {
     DisableAppUpdate = true;
     DisableTelemetry = true;
     DisableFirefoxStudies = true;
@@ -22,10 +15,6 @@ in {
     PasswordManagerEnabled = false;
     RequestedLocales = ["fr"];
     ExtensionSettings = {
-      "langpack-fr@firefox.mozilla.org" = {
-        installation_mode = "force_installed";
-        install_url = "file://${zenLangpackFr}";
-      };
       ${bitwardenFirefoxId} = {
         installation_mode = "force_installed";
         install_url = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
@@ -38,7 +27,7 @@ in {
   };
 
   # Her Zen settings, as defaults: she can still change them in the GUI.
-  browser.zen.extraPrefs = ''
+  programs.zen-browser.extraPrefs = ''
     defaultPref("browser.translations.alwaysTranslateLanguages", "en");
     defaultPref("extensions.formautofill.addresses.enabled", false);
     defaultPref("extensions.formautofill.creditCards.enabled", false);
