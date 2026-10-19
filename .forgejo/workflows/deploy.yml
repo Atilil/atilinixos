@@ -45,7 +45,7 @@ jobs:
           done
 
       # Reached only when every host built, so `deploy` never points to an unbuilt commit.
-      - name: Publish deploy and the flake.lock PR
+      - name: Publish deploy and its PR to main
         env:
           SIGNING_KEY_B64: ${{ secrets.CI_SIGNING_KEY_B64 }}
         run: |
@@ -59,19 +59,22 @@ jobs:
           git config user.signingkey "$key"
           git config commit.gpgsign true
           remote="$(echo '${{ forgejo.server_url }}' | sed "s#://#://${{ forgejo.repository_owner }}:$TOKEN@#")/${{ forgejo.repository }}.git"
+          lock_changed=0
           if ! git diff --quiet flake.lock; then
             git commit -q -m "chore(flake): update inputs" flake.lock
-            # The PR lets main catch up with deploy's flake.lock; an open one follows this branch.
-            git push -q --force "$remote" HEAD:refs/heads/bot/flake-lock
+            lock_changed=1
+          fi
+          git push -q --force "$remote" HEAD:refs/heads/deploy
+          # deploy is main plus the lock commit, so this PR lets main catch up; an open one follows deploy.
+          if [ "$lock_changed" = 1 ]; then
             open=$(curl -sf -H "Authorization: token $TOKEN" "$API/pulls?state=open&limit=50" \
-              | nix run nixpkgs#jq -- '[.[] | select(.head.ref == "bot/flake-lock")] | length')
+              | nix run nixpkgs#jq -- '[.[] | select(.head.ref == "deploy")] | length')
             if [ "$open" = 0 ]; then
               curl -sf -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
-                -d '{"title":"chore(flake): update inputs","head":"bot/flake-lock","base":"main","body":"Already built and deployed through the deploy branch."}' \
+                -d '{"title":"chore(flake): update inputs","head":"deploy","base":"main","body":"Already built and deployed through the deploy branch."}' \
                 "$API/pulls" > /dev/null
             fi
           fi
-          git push -q --force "$remote" HEAD:refs/heads/deploy
 
       - name: Keep the last builds only
         run: |
