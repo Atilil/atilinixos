@@ -46,9 +46,18 @@ jobs:
 
       # Reached only when every host built, so `deploy` never points to an unbuilt commit.
       - name: Publish deploy and the flake.lock PR
+        env:
+          SIGNING_KEY_B64: ${{ secrets.CI_SIGNING_KEY_B64 }}
         run: |
+          key="$(mktemp)"
+          trap 'rm -f "$key"' EXIT
+          echo "$SIGNING_KEY_B64" | base64 -d > "$key"
+          # main only accepts verified commits: the email must own this key on the forge.
           git config user.name "Forgejo CI"
-          git config user.email "ci@localhost"
+          git config user.email "yoann@macopla.com"
+          git config gpg.format ssh
+          git config user.signingkey "$key"
+          git config commit.gpgsign true
           remote="$(echo '${{ forgejo.server_url }}' | sed "s#://#://${{ forgejo.repository_owner }}:$TOKEN@#")/${{ forgejo.repository }}.git"
           if ! git diff --quiet flake.lock; then
             git commit -q -m "chore(flake): update inputs" flake.lock
