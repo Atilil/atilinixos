@@ -1,9 +1,8 @@
 name: deploy
 
-# main + fresh flake.lock, built on mouse, then published as `deploy` for the hosts' autoUpgrade.
+# Builds main on mouse, then publishes it as `deploy` for the hosts' autoUpgrade.
+# Input updates come from Renovate PRs, already checked by build.yml before they reach main.
 on:
-  schedule:
-    - cron: "0 4 * * *" # UTC
   push:
     branches: [main]
   workflow_dispatch:
@@ -19,20 +18,10 @@ jobs:
       HOSTS: laptop ideapad
       GCROOT_DIR: /home/runner/gcroots/deploy
       KEEP: 3
-      # Fine-grained token with repository write: the automatic token is not used for pushes.
-      TOKEN: ${{ secrets.CI_PUSH_TOKEN }}
-      API: ${{ forgejo.server_url }}/api/v1/repos/${{ forgejo.repository }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: Update inputs
-        if: forgejo.event_name != 'push'
-        run: nix flake update
-
-      - name: Check
-        run: nix flake check --print-build-logs
 
       # A gcroot keeps each build alive in mouse's store, which Harmonia serves to the hosts.
       - name: Build hosts
@@ -45,36 +34,12 @@ jobs:
           done
 
       # Reached only when every host built, so `deploy` never points to an unbuilt commit.
-      - name: Publish deploy and its PR to main
+      - name: Publish deploy
         env:
-          SIGNING_KEY_B64: ${{ secrets.CI_SIGNING_KEY_B64 }}
+          TOKEN: ${{ secrets.CI_PUSH_TOKEN }}
         run: |
-          key="$(mktemp)"
-          trap 'rm -f "$key"' EXIT
-          echo "$SIGNING_KEY_B64" | base64 -d > "$key"
-          # main only accepts verified commits: the email must own this key on the forge.
-          git config user.name "Forgejo CI"
-          git config user.email "yoann@macopla.com"
-          git config gpg.format ssh
-          git config user.signingkey "$key"
-          git config commit.gpgsign true
           remote="$(echo '${{ forgejo.server_url }}' | sed "s#://#://${{ forgejo.repository_owner }}:$TOKEN@#")/${{ forgejo.repository }}.git"
-          lock_changed=0
-          if ! git diff --quiet flake.lock; then
-            git commit -q -m "chore(flake): update inputs" flake.lock
-            lock_changed=1
-          fi
           git push -q --force "$remote" HEAD:refs/heads/deploy
-          # deploy is main plus the lock commit, so this PR lets main catch up; an open one follows deploy.
-          if [ "$lock_changed" = 1 ]; then
-            open=$(curl -sf -H "Authorization: token $TOKEN" "$API/pulls?state=open&limit=50" \
-              | nix run nixpkgs#jq -- '[.[] | select(.head.ref == "deploy")] | length')
-            if [ "$open" = 0 ]; then
-              curl -sf -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
-                -d '{"title":"chore(flake): update inputs","head":"deploy","base":"main","body":"Already built and deployed through the deploy branch."}' \
-                "$API/pulls" > /dev/null
-            fi
-          fi
 
       - name: Keep the last builds only
         run: |
