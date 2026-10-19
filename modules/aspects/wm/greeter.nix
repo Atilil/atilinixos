@@ -26,18 +26,13 @@ in {
       environment.systemPackages = lib.optional ((config.services.displayManager.noctalia-greeter.settings.cursor.theme or "") == "Nordzy-cursors") pkgs.nordzy-cursor-theme;
 
       # The flake module only: nixpkgs 26.05 ships no noctalia-greeter module.
-      imports = [
-        inputs.noctalia-greeter.nixosModules.default
-        # den applies this once per user; the key dedups it, as `package` takes a single definition.
-        {
-          key = "greeter-package";
-          # Adds a keyboard layout indicator and per-user sessions ([session.users]).
-          services.displayManager.noctalia-greeter.package = lib.mkDefault (patchedGreeter pkgs [./_greeter/layout-user-session.patch]);
-        }
-      ];
+      imports = [inputs.noctalia-greeter.nixosModules.default];
 
       services.displayManager.noctalia-greeter = {
         enable = true;
+
+        # Adds a keyboard layout indicator and per-user sessions ([session.users]).
+        package = patchedGreeter pkgs [./_greeter/layout-user-session.patch];
 
         settings = {
           # Reuse the system XKB layout from the clavier aspect.
@@ -128,6 +123,7 @@ in {
       os = {
         config,
         pkgs,
+        lib,
         ...
       }: let
         breeze = pkgs.kdePackages.breeze;
@@ -170,10 +166,10 @@ in {
           );
       in {
         # ideapad.patch hides the session selector, which upstream cannot do by option.
-        services.displayManager.noctalia-greeter.package = patchedGreeter pkgs [
+        services.displayManager.noctalia-greeter.package = lib.mkForce (patchedGreeter pkgs [
           ./_greeter/layout-user-session.patch
           ./_greeter/ideapad.patch
-        ];
+        ]);
 
         # Unlock KWallet at login (plasma6 only wires `login`); needs identical passwords.
         security.pam.services.greetd.kwallet.enable = true;
