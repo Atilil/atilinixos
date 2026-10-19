@@ -3,7 +3,7 @@
   # host so the greeter loads the system mesa drivers without ABI mismatch; the
   # package is small, so the lost upstream binary cache costs one local build.
   flake-file.inputs.noctalia-greeter = {
-    url = "github:noctalia-dev/noctalia-greeter/v1.6.0";
+    url = "github:noctalia-dev/noctalia-greeter";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -152,8 +152,8 @@
             }
           );
       in {
-        # Patched greeter (ideapad only): hides the session selector, which v1.6.0 cannot
-        # do by option (_greeter/ideapad.patch). Re-check when bumping the input.
+        # Patched greeter (ideapad only): hides the session selector, which upstream cannot
+        # do by option (_greeter/ideapad.patch). A lock update that breaks it fails the CI build.
         services.displayManager.noctalia-greeter.package = inputs.noctalia-greeter.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
           patches = (old.patches or []) ++ [./_greeter/ideapad.patch];
         });

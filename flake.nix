@@ -22,13 +22,12 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/Hyprland/v0.55.4";
     import-tree.url = "github:vic/import-tree";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     noctalia.url = "github:noctalia-dev/noctalia/cachix";
     noctalia-greeter = {
-      url = "github:noctalia-dev/noctalia-greeter/v1.6.0";
+      url = "github:noctalia-dev/noctalia-greeter";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nvf = {

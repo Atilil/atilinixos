@@ -1,15 +1,20 @@
-{inputs, ...}: {
-  # Upstream Hyprland (same 0.55.4 as nixpkgs) for its newer aquamarine: nixpkgs 26.05's aquamarine 0.11.0
-  # breaks DisplayLink/evdi hotplug (aquamarine#311, fixed in 0.12.0). No nixpkgs follows, so
-  # hyprland.cachix.org (see core.nix) serves binaries.
-  flake-file.inputs.hyprland.url = "github:hyprwm/Hyprland/v0.55.4";
-
-  den.aspects.hyprland.os = {pkgs, ...}: let
-    hyprPkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
-  in {
-    programs.hyprland = {
-      package = hyprPkgs.hyprland;
-      portalPackage = hyprPkgs.xdg-desktop-portal-hyprland;
-    };
+_: {
+  # nixpkgs 26.05's aquamarine 0.11.0 breaks DisplayLink/evdi hotplug (aquamarine#311, fixed in 0.12.0).
+  # 0.12.1 is what upstream Hyprland 0.55.4 ships. Remove once NixOS/nixpkgs#576098 (fix backport) reaches nixos-26.05.
+  den.aspects.hyprland.os = {lib, ...}: {
+    nixpkgs.overlays = [
+      (final: prev:
+        lib.optionalAttrs (lib.versionOlder prev.aquamarine.version "0.12.1") {
+          aquamarine = prev.aquamarine.overrideAttrs (old: {
+            version = "0.12.1";
+            src = final.fetchFromGitHub {
+              owner = "hyprwm";
+              repo = "aquamarine";
+              tag = "v0.12.1";
+              hash = "sha256-cUQENbJn0PHQUttXame5+PbGGew+BckHZFTfpb8XGI8=";
+            };
+          });
+        })
+    ];
   };
 }
