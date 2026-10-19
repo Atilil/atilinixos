@@ -47,10 +47,10 @@ _: {
         wifi.powersave = true;
       };
 
-      # Pulls the toplevel CI built on the deploy branch (Harmonia serves it, nothing compiles here).
+      # Pulls main, already built by CI and served by Harmonia: nothing compiles here.
       system.autoUpgrade = {
         enable = true;
-        flake = "git+ssh://git@forge.macopla.com:2222/yoann/NixOS.git?ref=deploy";
+        flake = "git+ssh://git@forge.macopla.com:2222/yoann/NixOS.git?ref=main";
         # The module already adds --refresh and --flake.
         flags = ["--print-build-logs"];
         operation = "boot";
