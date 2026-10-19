@@ -1,17 +1,40 @@
 _: {
-  den.aspects.hyprland.homeManager = {
-    lib,
-    pkgs,
-    ...
-  }: let
+  den.aspects.hyprland.homeManager = {lib, ...}: let
     lua = lib.generators.mkLuaInline;
     # Smart scratchpad: (re)spawn the scratch kitty if it was closed, then toggle.
-    # The `scratch` window rule sends a new instance to special:scratch silently.
-    scratchToggle = pkgs.writeShellScript "scratch-toggle" ''
-      if ! hyprctl clients | grep -q "class: scratch$"; then
-        kitty --class scratch &
-      fi
-      hyprctl dispatch 'hl.dsp.workspace.toggle_special("scratch")'
+    # Rules size/center only at map time, and a `silent` window never gets focus:
+    # refit to the summoning monitor and focus on every show.
+    scratchToggle = lua ''
+      function()
+        local toggle = hl.dsp.workspace.toggle_special("scratch")
+        local w = "class:^(scratch)$"
+        local mon = hl.get_active_monitor()
+        if not mon or #hl.get_windows({ class = "scratch" }) == 0 then
+          -- The window doesn't exist yet: focus it once it maps, then unsubscribe.
+          local sub
+          sub = hl.on("window.open", function(win)
+            if win.class == "scratch" then
+              hl.dispatch(hl.dsp.focus({ window = w }))
+              sub:remove()
+            end
+          end)
+          hl.dispatch(hl.dsp.exec_cmd("kitty --class scratch"))
+          hl.dispatch(toggle)
+          return
+        end
+        local special = mon.active_special_workspace
+        local wasShown = special and special.name == "special:scratch"
+        hl.dispatch(toggle)
+        if not wasShown then
+          hl.dispatch(hl.dsp.window.resize({
+            x = math.floor(mon.width / mon.scale * 0.5),
+            y = math.floor(mon.height / mon.scale * 0.4),
+            window = w,
+          }))
+          hl.dispatch(hl.dsp.window.center({ window = w }))
+          hl.dispatch(hl.dsp.focus({ window = w }))
+        end
+      end
     '';
     cycleTiled = extra:
       lua ''
@@ -43,7 +66,7 @@ _: {
       drag = lua "hl.dsp.window.drag()";
       resizeFree = lua "hl.dsp.window.resize()";
       quickToggle = lua ''hl.dsp.workspace.toggle_special("quick")'';
-      scratchToggle = lua ''hl.dsp.exec_cmd("${scratchToggle}")'';
+      inherit scratchToggle;
       swapMaster = lua "hl.dsp.layout('swapwithmaster')";
     };
     bind = keys: dispatcher: {_args = [keys dispatcher];};
