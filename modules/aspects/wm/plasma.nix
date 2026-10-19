@@ -6,9 +6,14 @@
   };
 
   den.aspects.plasma = {
-    # Only the module; the look is plasma-rice, the layout is per user.
+    # Module and shared behaviour; the look is plasma-rice, the layout is per user.
     homeManager = {
       imports = [inputs.plasma-manager.homeModules.plasma-manager];
+
+      programs.plasma = {
+        input.keyboard.numlockOnStartup = "on";
+        session.sessionRestore.restoreOpenApplicationsOnLogin = "startWithEmptySession";
+      };
     };
 
     os = {
