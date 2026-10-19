@@ -1,4 +1,9 @@
-{inputs, ...}: {
+{inputs, ...}: let
+  patchedGreeter = pkgs: patches:
+    inputs.noctalia-greeter.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      patches = (old.patches or []) ++ patches;
+    });
+in {
   # Noctalia greeter (greetd). `follows` keeps glibc/libglvnd identical to the
   # host so the greeter loads the system mesa drivers without ABI mismatch; the
   # package is small, so the lost upstream binary cache costs one local build.
@@ -25,6 +30,9 @@
 
       services.displayManager.noctalia-greeter = {
         enable = true;
+
+        # Adds a keyboard layout indicator and per-user sessions ([session.users]).
+        package = lib.mkDefault (patchedGreeter pkgs [./_greeter/layout-user-session.patch]);
 
         settings = {
           # Reuse the system XKB layout from the clavier aspect.
@@ -60,6 +68,10 @@
           settings = {
             # Default to the UWSM session; name as listed by `noctalia-greeter sessions`.
             session.default = "Hyprland (uwsm-managed)";
+            session.users = {
+              yoann = "Hyprland (uwsm-managed)";
+              audrey = "Plasma (Wayland)";
+            };
 
             # No "last user" memory in the greeter: open on yoann's password
             # step; Esc returns to the user list for audrey.
@@ -152,11 +164,11 @@
             }
           );
       in {
-        # Patched greeter (ideapad only): hides the session selector, which upstream cannot
-        # do by option (_greeter/ideapad.patch). A lock update that breaks it fails the CI build.
-        services.displayManager.noctalia-greeter.package = inputs.noctalia-greeter.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-          patches = (old.patches or []) ++ [./_greeter/ideapad.patch];
-        });
+        # ideapad.patch hides the session selector, which upstream cannot do by option.
+        services.displayManager.noctalia-greeter.package = patchedGreeter pkgs [
+          ./_greeter/layout-user-session.patch
+          ./_greeter/ideapad.patch
+        ];
 
         # Unlock KWallet at login (plasma6 only wires `login`); needs identical passwords.
         security.pam.services.greetd.kwallet.enable = true;

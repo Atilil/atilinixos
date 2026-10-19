@@ -1,0 +1,374 @@
+diff --git a/src/greeter/greeter.cpp b/src/greeter/greeter.cpp
+index e8179e4..8ad325b 100644
+--- a/src/greeter/greeter.cpp
++++ b/src/greeter/greeter.cpp
+@@ -16,10 +16,12 @@
+ 
+ #include <algorithm>
+ #include <cerrno>
++#include <cctype>
+ #include <chrono>
+ #include <cstdlib>
+ #include <cstring>
+ #include <poll.h>
++#include <sstream>
+ #include <wayland-client.h>
+ 
+ namespace {
+@@ -306,6 +308,7 @@ void Greeter::syncOutputWindows() {
+     view.surface->setOnGreetdTransportError([this](const GreetdError& error) { onGreetdTransportError(error); });
+     view.surface->initialize(m_renderContext.get());
+     view.surface->setSharedAuthBlocked(m_authSurface != nullptr);
++    view.surface->setKeyboardLayoutText(m_layoutText);
+     if (m_greetdUnavailable) {
+       view.surface->setGreetdUnavailable("Login service is unavailable. Restart greetd.");
+     }
+@@ -543,11 +546,40 @@ void Greeter::setupInputCallbacks(WaylandClient& client) {
+     }
+   });
+ 
++  client.setLayoutChangedCallback([this]() { refreshKeyboardLayout(); });
++
+   client.setKeyboardEventCallback([this](const KeyboardEvent& event) {
+     onKeyboardEvent(event.sym, event.utf32, event.modifiers, event.pressed, event.preedit);
+   });
+ }
+ 
++void Greeter::refreshKeyboardLayout() {
++  if (m_client == nullptr) {
++    return;
++  }
++  if (m_layoutCodes.empty()) {
++    // "us,fr" -> {"US", "FR"}; falls back to the xkb layout name when unset.
++    if (const auto layout = greeter::loadGreeterPreferences().keyboardLayout) {
++      std::stringstream ss(*layout);
++      for (std::string code; std::getline(ss, code, ',');) {
++        std::transform(code.begin(), code.end(), code.begin(), [](unsigned char c) { return std::toupper(c); });
++        m_layoutCodes.push_back(code);
++      }
++    }
++  }
++  const int index = m_client->currentLayoutIndex();
++  std::string text;
++  if (index >= 0 && static_cast<std::size_t>(index) < m_layoutCodes.size()) {
++    text = m_layoutCodes[static_cast<std::size_t>(index)];
++  } else if (index >= 0) {
++    text = m_client->currentLayoutName();
++  }
++  m_layoutText = text;
++  for (auto& view : m_views) {
++    view.surface->setKeyboardLayoutText(text);
++  }
++}
++
+ void Greeter::onKeyboardEvent(
+     std::uint32_t sym, std::uint32_t utf32, std::uint32_t modifiers, bool pressed, bool preedit
+ ) {
+diff --git a/src/greeter/greeter.h b/src/greeter/greeter.h
+index 635f711..c374783 100644
+--- a/src/greeter/greeter.h
++++ b/src/greeter/greeter.h
+@@ -50,6 +50,7 @@ private:
+   [[nodiscard]] bool claimAuthSurface(GreeterSurface* surface);
+   void releaseAuthSurface(GreeterSurface* surface);
+   void setupInputCallbacks(WaylandClient& client);
++  void refreshKeyboardLayout();
+   void syncOutputWindows();
+   void syncStateFrom(const GreeterSurface* source);
+   void setActiveSurface(GreeterSurface* surface);
+@@ -57,6 +58,8 @@ private:
+   [[nodiscard]] View* viewForSurface(wl_surface* surface) noexcept;
+ 
+   WaylandClient* m_client = nullptr;
++  std::vector<std::string> m_layoutCodes;
++  std::string m_layoutText;
+   GlSharedContext m_glSharedContext;
+   std::unique_ptr<RenderContext> m_renderContext;
+   std::vector<View> m_views;
+diff --git a/src/greeter/greeter_config_io.cpp b/src/greeter/greeter_config_io.cpp
+index e1cf03f..ce5f270 100644
+--- a/src/greeter/greeter_config_io.cpp
++++ b/src/greeter/greeter_config_io.cpp
+@@ -56,7 +56,7 @@ namespace {
+   [[nodiscard]] bool isKnownSessionKey(std::string_view key) {
+     // "power"/"actions" are Sync-only (sync.toml); recognized here only so parseConfig
+     // does not warn about them when parsing sync.toml through the shared session-table loop.
+-    return key == "default" || key == "last" || key == "power" || key == "actions";
++    return key == "default" || key == "last" || key == "users" || key == "power" || key == "actions";
+   }
+ 
+   [[nodiscard]] bool isKnownUserKey(std::string_view key) { return key == "default"; }
+@@ -207,6 +207,14 @@ namespace {
+             config.sessionDefault = stringValue(entryNode);
+           } else if (entryView == "last") {
+             config.sessionLast = stringValue(entryNode);
++          } else if (entryView == "users") {
++            if (const toml::table* users = entryNode.as_table()) {
++              for (const auto& [userKey, userNode] : *users) {
++                if (const auto name = stringValue(userNode)) {
++                  config.sessionUsers[std::string(userKey.str())] = *name;
++                }
++              }
++            }
+           }
+           // power/actions: Sync-only, parsed directly from the root table by parseSync.
+         } else if (keyView == "user") {
+@@ -467,6 +475,13 @@ namespace {
+           table.insert_or_assign(std::string(key), value);
+         }
+     );
++    if (!config.sessionUsers.empty()) {
++      toml::table users;
++      for (const auto& [name, value] : config.sessionUsers) {
++        users.insert_or_assign(name, value);
++      }
++      session.insert_or_assign("users", std::move(users));
++    }
+     if (!session.empty()) {
+       root.insert("session", std::move(session));
+     }
+diff --git a/src/greeter/greeter_config_store.h b/src/greeter/greeter_config_store.h
+index 919522d..fcfb2f7 100644
+--- a/src/greeter/greeter_config_store.h
++++ b/src/greeter/greeter_config_store.h
+@@ -37,6 +37,8 @@ namespace greeter::config {
+   // Full declarative greeter.toml. UI and Sync never write this file.
+   struct GreeterConfigFile {
+     std::optional<std::string> sessionDefault;
++    // [session.users]: username -> session name, applied when that user is selected.
++    std::unordered_map<std::string, std::string> sessionUsers;
+     // Legacy only: migrated into sync.toml; stripped on greeter.toml write.
+     std::optional<std::string> sessionLast;
+ 
+diff --git a/src/greeter/greeter_preferences.cpp b/src/greeter/greeter_preferences.cpp
+index 6641f41..4d9f03a 100644
+--- a/src/greeter/greeter_preferences.cpp
++++ b/src/greeter/greeter_preferences.cpp
+@@ -405,6 +405,8 @@ namespace greeter {
+ 
+     GreeterPreferences prefs;
+     prefs.defaultSession = file.sessionDefault;
++    prefs.userSessions = file.sessionUsers;
++    prefs.keyboardLayout = file.keyboardLayout;
+     prefs.defaultUser = file.userDefault;
+     prefs.session = sync.sessionLast;
+     // greeter.toml is declarative and wins; sync.toml only carries the last UI pick.
+diff --git a/src/greeter/greeter_preferences.h b/src/greeter/greeter_preferences.h
+index 9b53a89..00212d5 100644
+--- a/src/greeter/greeter_preferences.h
++++ b/src/greeter/greeter_preferences.h
+@@ -6,6 +6,7 @@
+ #include <optional>
+ #include <string>
+ #include <string_view>
++#include <unordered_map>
+ #include <vector>
+ 
+ namespace greeter {
+@@ -23,6 +24,9 @@ namespace greeter {
+ 
+   struct GreeterPreferences {
+     std::optional<std::string> defaultSession;
++    std::unordered_map<std::string, std::string> userSessions;
++    // greeter.toml [keyboard].layout, e.g. "us,fr"; used for short layout labels.
++    std::optional<std::string> keyboardLayout;
+     std::optional<std::string> defaultUser;
+     std::optional<std::string> session;
+     std::optional<std::string> scheme;
+diff --git a/src/greeter/greeter_surface.cpp b/src/greeter/greeter_surface.cpp
+index 1e709b1..adfe8b4 100644
+--- a/src/greeter/greeter_surface.cpp
++++ b/src/greeter/greeter_surface.cpp
+@@ -508,6 +508,15 @@ void GreeterSurface::initialize(RenderContext* context) {
+   m_statusLabel->setZIndex(6);
+   m_root.addChild(std::move(status));
+ 
++  auto layoutLabel = std::make_unique<Label>();
++  layoutLabel->setFontSize(Style::fontSizeCaption());
++  layoutLabel->setBold(true);
++  layoutLabel->setColor(colorForRole(ColorRole::OnSurfaceVariant));
++  layoutLabel->setHitTestVisible(false);
++  m_layoutLabel = layoutLabel.get();
++  m_layoutLabel->setZIndex(6);
++  m_root.addChild(std::move(layoutLabel));
++
+   auto configErrorBanner = std::make_unique<RectNode>();
+   configErrorBanner->setHitTestVisible(false);
+   configErrorBanner->setVisible(false);
+@@ -729,7 +738,23 @@ void GreeterSurface::setWindow(GreeterWindow* window) { m_window = window; }
+ 
+ void GreeterSurface::setGreetdClient(GreetdClient* client) { m_greetdClient = client; }
+ 
+-void GreeterSurface::setUsername(const std::string& username) { m_username = username; }
++void GreeterSurface::setUsername(const std::string& username) {
++  m_username = username;
++  // Per-user session from [session.users]; the selector can still override it.
++  if (const auto it = m_userSessions.find(username); it != m_userSessions.end()) {
++    if (const auto index = greeter::findSessionIndex(m_sessions, it->second)) {
++      m_selectedSession = *index;
++    }
++  }
++}
++
++void GreeterSurface::setKeyboardLayoutText(const std::string& text) {
++  if (text == m_layoutText) {
++    return;
++  }
++  m_layoutText = text;
++  requestLayout();
++}
+ 
+ void GreeterSurface::setOnExitRequested(std::function<void()> callback) { m_onExitRequested = std::move(callback); }
+ 
+@@ -1319,6 +1344,19 @@ void GreeterSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
+     m_backButton->setVisible(false);
+   }
+ 
++  if (m_layoutLabel != nullptr) {
++    const bool showLayout = showPasswordStep && !m_layoutText.empty();
++    m_layoutLabel->setVisible(showLayout);
++    if (showLayout) {
++      m_layoutLabel->setText(m_layoutText);
++      m_layoutLabel->setFontSize(Style::fontSizeCaption());
++      m_layoutLabel->measure(*renderer);
++      m_layoutLabel->setPosition(
++          std::round(contentLeft + contentWidth - m_layoutLabel->width()), std::round(panelY + panelPadding)
++      );
++    }
++  }
++
+   const float sessionY = m_passwordVisible ? (contentTop + Style::controlHeight() + sessionRowGap)
+                                            : (contentTop + userBlockHeight + sessionRowGap);
+   layoutPanelSessionSelector(contentLeft, sessionY, contentWidth, sessionRowH);
+@@ -2048,6 +2086,7 @@ void GreeterSurface::syncWallpaperTexture() {
+ void GreeterSurface::loadPreferences() {
+   const auto prefs = greeter::loadGreeterPreferences();
+   m_allowEmptyPassword = prefs.allowEmptyPassword;
++  m_userSessions = prefs.userSessions;
+   const auto initialSession = greeter::resolveInitialSessionName(prefs);
+ 
+   if (initialSession.has_value()) {
+diff --git a/src/greeter/greeter_surface.h b/src/greeter/greeter_surface.h
+index 148b7d2..57c0177 100644
+--- a/src/greeter/greeter_surface.h
++++ b/src/greeter/greeter_surface.h
+@@ -20,6 +20,7 @@
+ #include <optional>
+ #include <string>
+ #include <string_view>
++#include <unordered_map>
+ #include <sys/types.h>
+ #include <vector>
+ 
+@@ -48,6 +49,8 @@ public:
+   void setWallpaperSpanParams(const WallpaperSpanParams& params);
+   void setGreetdClient(GreetdClient* client);
+   void setUsername(const std::string& username);
++  // Short label of the active keyboard layout (e.g. "FR"); empty hides the indicator.
++  void setKeyboardLayoutText(const std::string& text);
+   void setOnExitRequested(std::function<void()> callback);
+   void setOnStateChanged(std::function<void(GreeterSurface*)> callback);
+   void setOnAuthBeginRequested(std::function<bool(GreeterSurface*)> callback);
+@@ -215,6 +218,9 @@ private:
+   Button* m_loginButton = nullptr;
+   Button* m_backButton = nullptr;
+   Label* m_statusLabel = nullptr;
++  Label* m_layoutLabel = nullptr;
++  std::string m_layoutText;
++  std::unordered_map<std::string, std::string> m_userSessions;
+   RectNode* m_configErrorBanner = nullptr;
+   Label* m_configErrorHeading = nullptr;
+   Label* m_configErrorLabel = nullptr;
+diff --git a/src/wayland/wayland_client.cpp b/src/wayland/wayland_client.cpp
+index 3ee1a91..045f65e 100644
+--- a/src/wayland/wayland_client.cpp
++++ b/src/wayland/wayland_client.cpp
+@@ -348,6 +348,10 @@ void WaylandClient::setPointerEventCallback(WaylandSeat::PointerEventCallback ca
+   m_seatHandler.setPointerEventCallback(std::move(callback));
+ }
+ 
++void WaylandClient::setLayoutChangedCallback(WaylandSeat::LayoutChangedCallback callback) {
++  m_seatHandler.setLayoutChangedCallback(std::move(callback));
++}
++
+ void WaylandClient::setKeyboardEventCallback(WaylandSeat::KeyboardEventCallback callback) {
+   m_seatHandler.setKeyboardEventCallback(std::move(callback));
+ }
+diff --git a/src/wayland/wayland_client.h b/src/wayland/wayland_client.h
+index 960760a..75c0145 100644
+--- a/src/wayland/wayland_client.h
++++ b/src/wayland/wayland_client.h
+@@ -66,6 +66,9 @@ public:
+ 
+   void setPointerEventCallback(WaylandSeat::PointerEventCallback callback);
+   void setKeyboardEventCallback(WaylandSeat::KeyboardEventCallback callback);
++  void setLayoutChangedCallback(WaylandSeat::LayoutChangedCallback callback);
++  [[nodiscard]] int currentLayoutIndex() const { return m_seatHandler.currentLayoutIndex(); }
++  [[nodiscard]] std::string currentLayoutName() const { return m_seatHandler.currentLayoutName(); }
+   void setOutputsChangedCallback(std::function<void()> callback);
+   void setPreferredOutputName(std::optional<std::string> name);
+ 
+diff --git a/src/wayland/wayland_seat.cpp b/src/wayland/wayland_seat.cpp
+index a080924..b913f6a 100644
+--- a/src/wayland/wayland_seat.cpp
++++ b/src/wayland/wayland_seat.cpp
+@@ -728,6 +728,13 @@ void WaylandSeat::handleKeyboardModifiers(
+   auto* self = static_cast<WaylandSeat*>(data);
+   if (self->m_xkbState != nullptr) {
+     xkb_state_update_mask(self->m_xkbState, modsDepressed, modsLatched, modsLocked, 0, 0, group);
++    const int layout = self->currentLayoutIndex();
++    if (layout != self->m_lastLayoutIndex) {
++      self->m_lastLayoutIndex = layout;
++      if (self->m_layoutChangedCallback) {
++        self->m_layoutChangedCallback();
++      }
++    }
+   }
+ }
+ 
+@@ -768,6 +775,14 @@ void WaylandSeat::repeatTick() {
+   m_repeatNextFire = now + intervalMs;
+ }
+ 
++int WaylandSeat::currentLayoutIndex() const {
++  if (m_xkbState == nullptr || m_xkbKeymap == nullptr) {
++    return -1;
++  }
++  const xkb_layout_index_t layout = xkb_state_serialize_layout(m_xkbState, XKB_STATE_LAYOUT_EFFECTIVE);
++  return layout == XKB_LAYOUT_INVALID ? -1 : static_cast<int>(layout);
++}
++
+ std::string WaylandSeat::currentLayoutName() const {
+   if (m_xkbState == nullptr || m_xkbKeymap == nullptr) {
+     return {};
+diff --git a/src/wayland/wayland_seat.h b/src/wayland/wayland_seat.h
+index 40f53b2..23f9de0 100644
+--- a/src/wayland/wayland_seat.h
++++ b/src/wayland/wayland_seat.h
+@@ -72,6 +72,7 @@ public:
+     bool operator==(const LockKeysState&) const = default;
+   };
+ 
++  using LayoutChangedCallback = std::function<void()>;
+   using PointerEventCallback = std::function<void(const PointerEvent&)>;
+   using KeyboardEventCallback = std::function<void(const KeyboardEvent&)>;
+ 
+@@ -142,6 +143,9 @@ public:
+   [[nodiscard]] bool hasPointerPosition() const noexcept { return m_hasPointerPosition; }
+   [[nodiscard]] double lastPointerX() const noexcept { return m_lastPointerX; }
+   [[nodiscard]] double lastPointerY() const noexcept { return m_lastPointerY; }
++  void setLayoutChangedCallback(LayoutChangedCallback callback) { m_layoutChangedCallback = std::move(callback); }
++  // Effective xkb group index, or -1 without a keymap.
++  [[nodiscard]] int currentLayoutIndex() const;
+   [[nodiscard]] std::string currentLayoutName() const;
+   [[nodiscard]] std::vector<std::string> layoutNames() const;
+   [[nodiscard]] LockKeysState lockKeysState() const;
+@@ -185,6 +189,8 @@ private:
+   xkb_compose_table* m_composeTable = nullptr;
+   xkb_compose_state* m_composeState = nullptr;
+   KeyboardEventCallback m_keyboardEventCallback;
++  LayoutChangedCallback m_layoutChangedCallback;
++  int m_lastLayoutIndex = -1;
+ 
+   // Key repeat
+   SteadyClock::time_point m_lastUserActivitySteady{};
