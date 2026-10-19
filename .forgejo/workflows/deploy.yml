@@ -28,6 +28,7 @@ jobs:
           ref: main
 
       - name: Update inputs
+        if: forgejo.event_name != 'push'
         run: nix flake update
 
       - name: Check
