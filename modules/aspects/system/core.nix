@@ -1,6 +1,6 @@
 _: {
   den.aspects.core = {
-    os = {flakePath, ...}: {
+    os = _: {
       time.timeZone = "Europe/Paris";
       i18n.defaultLocale = "fr_FR.UTF-8";
 
@@ -55,20 +55,43 @@ _: {
         wifi.powersave = true;
       };
 
+      # Pulls the toplevel CI built on the deploy branch (Harmonia serves it, nothing compiles here).
       system.autoUpgrade = {
         enable = true;
-        flake = flakePath;
-        flags = ["--print-build-logs" "--commit-lock-file"];
-        dates = "weekly";
+        flake = "git+ssh://git@forge.macopla.com:2222/yoann/NixOS.git?ref=deploy";
+        # The module already adds --refresh and --flake.
+        flags = ["--print-build-logs"];
+        operation = "boot";
+        dates = "daily";
         randomizedDelaySec = "45min";
         runGarbageCollection = true;
       };
-      programs.git.config = {
-        safe.directory = [flakePath];
-        user = {
-          name = "NixOS AutoUpgrade";
-          email = "root@localhost";
+
+      systemd.services.nixos-upgrade = {
+        serviceConfig = {
+          Nice = 19;
+          CPUSchedulingPolicy = "idle";
+          IOSchedulingClass = "idle";
+          # Retry a transient failure (network, forge) a few times, then give up until the next timer.
+          Restart = "on-failure";
+          RestartSec = "10min";
         };
+        unitConfig = {
+          StartLimitIntervalSec = "3h";
+          StartLimitBurst = 3;
+        };
+      };
+
+      # Read-only deploy key for the private forge repo; root only, since IdentityFile adds up for every user.
+      programs.ssh = {
+        extraConfig = ''
+          Match host forge.macopla.com localuser root
+            Port 2222
+            User git
+            IdentityFile /run/secrets/forge_deploy_key
+            IdentitiesOnly yes
+        '';
+        knownHosts."[forge.macopla.com]:2222".publicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC7DDIdXCZWxxLpkxdmJrN1ZmX0JQGUz5vm17eHOAH4QQyrl4UYikoKq+OEVz9Fy4ihJhptnnbr41yRLMWAGdh1+YFyTp5op4pcbWR15TaI0i+U0xG0R441B6J1hEaaoyCfBvG4jcUXlUHVarNLSseeZt0UfwIK1ZP7iynLWLeaep3uCbFmJ4aHqWW/V1X8VSe5SMz2wFK0pcje65hR8IS7w/ltaxA/9bJCyC+82Z5ZxggUzJtsi2ndlPQbzH5/JKtEr8mkKMuHYEi3lqK/3KGzaUgVSOP5f7PtBS/zAoM0M4iXThYdYuYW2xKIum/inYaOTxE3lOH2bZwTNcsk2d8V4UsvwytJoZUVN4Vy75Es34D1mSCU4aU3mPnTCw0086nyyeAe7703Bivg5LUau5vLgtYuZRqJ1xEC4rI2DJmjKEpT1v45svpUr2lFAI5yBGqsQbW51IAVspMrZjD3KaqRrY1gjw3HyD7NHyShRnoWZLvhtJihxzQ6d7++idD+KaS2+ibQOAR67qtDi0RRctUkeL7UqNyv17uLIoE3dNWsJj3UMa64ElWwV5e25W0J/9M+SCK629kDwbrVYUAPe0St6bezdXc/wVE+lUhAZ+IBB0pJABG77mTC1OO03hNPSH6aPZRR5kyTboItkhkdEeljZGNw4m5PA9C3HfFW1H9v8w==";
       };
     };
   };

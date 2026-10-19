@@ -109,6 +109,9 @@
       # `or null`: the VM variant drops every sops secret.
       users.users.maria.hashedPasswordFile = config.sops.secrets.maria_password.path or null;
 
+      # Read-only forge deploy key for autoUpgrade (ssh config lives in the core aspect).
+      sops.secrets.forge_deploy_key.sopsFile = ./sops/secrets.yaml;
+
       virtualisation.vmVariant = {
         # VM: enough resources for Plasma.
         virtualisation = {

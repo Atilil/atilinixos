@@ -26,6 +26,7 @@ in {
           (map (u: "${u}_password") (hostUsers.${config.networking.hostName} or ["root"]))
           (_: {neededForUsers = true;})
           // {
+            forge_deploy_key = {};
             # Group wheel can read it: flake input resolution (github: refs) runs client-side
             # as the invoking user, not through nix-daemon as root.
             nix_access_tokens = {

@@ -48,6 +48,12 @@
           ];
         };
 
+        # The forge is only reachable through the tunnel.
+        systemd.services.nixos-upgrade = {
+          after = ["wireguard-wg-home.service"];
+          wants = ["wireguard-wg-home.service"];
+        };
+
         # NetworkManager (core aspect) must leave the tunnel alone.
         networking.networkmanager.unmanaged = ["interface-name:wg-home"];
 
