@@ -73,7 +73,7 @@ _: {
             {
               iconTasks = {
                 launchers = [
-                  "applications:zen.desktop"
+                  "applications:zen-beta.desktop"
                   "applications:helium.desktop"
                   "applications:thunderbird.desktop"
                   "applications:com.rtosta.zapzap.desktop"

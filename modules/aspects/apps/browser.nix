@@ -6,8 +6,9 @@
     };
 
     zen-browser = {
-      url = "github:youwen5/zen-browser-flake";
+      url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
     };
   };
 
@@ -34,19 +35,18 @@
     config.home.packages = [
       (
         let
-          zen = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          zenPkgs = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system};
+          unwrapped = zenPkgs.beta-unwrapped;
         in
-          # Re-run the flake's wrapFirefox with the policies (its result is not overridable).
           if config.browser.zen.extraPolicies == {} && config.browser.zen.extraPrefs == ""
-          then zen
+          then zenPkgs.default
+          # Mirrors the flake's wrap-zen.nix: wrapFirefox must see the Gecko version to pick its ffmpeg.
           else
-            zen.override {
-              wrapFirefox = browser: args:
-                pkgs.wrapFirefox browser (args
-                  // {
-                    extraPolicies = config.browser.zen.extraPolicies;
-                    extraPrefs = config.browser.zen.extraPrefs;
-                  });
+            pkgs.wrapFirefox (unwrapped // {version = unwrapped.firefoxVersion or "9999";}) {
+              inherit (unwrapped) version;
+              icon = "zen-browser";
+              extraPolicies = config.browser.zen.extraPolicies;
+              extraPrefs = config.browser.zen.extraPrefs;
             }
       )
       inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.default
@@ -58,9 +58,9 @@
     config.xdg.mimeApps = {
       enable = true;
       defaultApplications = {
-        "text/html" = lib.mkOverride 60 "zen.desktop";
-        "x-scheme-handler/http" = lib.mkOverride 60 "zen.desktop";
-        "x-scheme-handler/https" = lib.mkOverride 60 "zen.desktop";
+        "text/html" = lib.mkOverride 60 "zen-beta.desktop";
+        "x-scheme-handler/http" = lib.mkOverride 60 "zen-beta.desktop";
+        "x-scheme-handler/https" = lib.mkOverride 60 "zen-beta.desktop";
       };
     };
   };

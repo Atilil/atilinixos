@@ -5,10 +5,10 @@
 }: let
   # Bitwarden extension ID on Firefox
   bitwardenFirefoxId = "{446900e4-71c2-419f-a6a7-df9c091e268b}";
-  zenFirefoxVersion = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.zen-browser-unwrapped.firefoxVersion;
+  zenFirefoxVersion = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.beta-unwrapped.firefoxVersion;
   zenLangpackFr = pkgs.fetchurl {
     url = "https://ftp.mozilla.org/pub/firefox/releases/${zenFirefoxVersion}/linux-x86_64/xpi/fr.xpi";
-    hash = "sha256-2YPEYUaagNlT+K5vPgKUJRP87IqCASqr4Wp4188RpME="; # Firefox 157.0
+    hash = "sha256-sFjPRgw3WTIWo08TFkXTaZ2YOqyHtMPPhXnPHQATIZQ="; # Firefox 158.0
   };
 in {
   browser.zen.extraPolicies = {
