@@ -14,7 +14,7 @@ jobs:
   check:
     runs-on: nixos
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: nix flake check --print-build-logs
       # TODO: fail if flake.nix is stale vs the modules (`nix run .#write-flake` then `git diff --exit-code flake.nix`)
 
@@ -34,7 +34,7 @@ jobs:
       GCROOT_DIR: /home/runner/gcroots/ci
       KEEP: 3
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Plan (built vs substituted)
         run: nix build --dry-run '.#${{ matrix.attr }}'
