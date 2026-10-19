@@ -1,6 +1,6 @@
 name: deploy
 
-# Builds main on mouse, then publishes it as `deploy` for the hosts' autoUpgrade.
+# Builds main on mouse so the hosts' autoUpgrade of main finds it in Harmonia.
 # Input updates come from Renovate PRs, already checked by build.yml before they reach main.
 on:
   push:
@@ -32,14 +32,6 @@ jobs:
               --out-link "$GCROOT_DIR/$host-${{ forgejo.run_id }}" \
               ".#nixosConfigurations.$host.config.system.build.toplevel"
           done
-
-      # Reached only when every host built, so `deploy` never points to an unbuilt commit.
-      - name: Publish deploy
-        env:
-          TOKEN: ${{ secrets.CI_PUSH_TOKEN }}
-        run: |
-          remote="$(echo '${{ forgejo.server_url }}' | sed "s#://#://${{ forgejo.repository_owner }}:$TOKEN@#")/${{ forgejo.repository }}.git"
-          git push -q --force "$remote" HEAD:refs/heads/deploy
 
       - name: Keep the last builds only
         run: |
