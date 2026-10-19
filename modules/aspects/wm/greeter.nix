@@ -26,13 +26,18 @@ in {
       environment.systemPackages = lib.optional ((config.services.displayManager.noctalia-greeter.settings.cursor.theme or "") == "Nordzy-cursors") pkgs.nordzy-cursor-theme;
 
       # The flake module only: nixpkgs 26.05 ships no noctalia-greeter module.
-      imports = [inputs.noctalia-greeter.nixosModules.default];
+      imports = [
+        inputs.noctalia-greeter.nixosModules.default
+        # den applies this once per user; the key dedups it, as `package` takes a single definition.
+        {
+          key = "greeter-package";
+          # Adds a keyboard layout indicator and per-user sessions ([session.users]).
+          services.displayManager.noctalia-greeter.package = lib.mkDefault (patchedGreeter pkgs [./_greeter/layout-user-session.patch]);
+        }
+      ];
 
       services.displayManager.noctalia-greeter = {
         enable = true;
-
-        # Adds a keyboard layout indicator and per-user sessions ([session.users]).
-        package = lib.mkDefault (patchedGreeter pkgs [./_greeter/layout-user-session.patch]);
 
         settings = {
           # Reuse the system XKB layout from the clavier aspect.
