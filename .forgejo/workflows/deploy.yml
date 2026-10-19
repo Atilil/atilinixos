@@ -1,0 +1,70 @@
+name: deploy
+
+# main + fresh flake.lock, built on mouse, then published as `deploy` for the hosts' autoUpgrade.
+on:
+  schedule:
+    - cron: "0 4 * * *" # UTC
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ forgejo.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: nixos
+    env:
+      HOSTS: laptop ideapad
+      GCROOT_DIR: /home/runner/gcroots/deploy
+      KEEP: 3
+      # Fine-grained token with repository write: the automatic token is not used for pushes.
+      TOKEN: ${{ secrets.CI_PUSH_TOKEN }}
+      API: ${{ forgejo.server_url }}/api/v1/repos/${{ forgejo.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update inputs
+        run: nix flake update
+
+      - name: Check
+        run: nix flake check --print-build-logs
+
+      # A gcroot keeps each build alive in mouse's store, which Harmonia serves to the hosts.
+      - name: Build hosts
+        run: |
+          mkdir -p "$GCROOT_DIR"
+          for host in $HOSTS; do
+            nix build --print-build-logs \
+              --out-link "$GCROOT_DIR/$host-${{ forgejo.run_id }}" \
+              ".#nixosConfigurations.$host.config.system.build.toplevel"
+          done
+
+      # Reached only when every host built, so `deploy` never points to an unbuilt commit.
+      - name: Publish deploy and the flake.lock PR
+        run: |
+          git config user.name "Forgejo CI"
+          git config user.email "ci@localhost"
+          remote="$(echo '${{ forgejo.server_url }}' | sed "s#://#://${{ forgejo.repository_owner }}:$TOKEN@#")/${{ forgejo.repository }}.git"
+          if ! git diff --quiet flake.lock; then
+            git commit -q -m "chore(flake): update inputs" flake.lock
+            # The PR lets main catch up with deploy's flake.lock; an open one follows this branch.
+            git push -q --force "$remote" HEAD:refs/heads/bot/flake-lock
+            open=$(curl -sf -H "Authorization: token $TOKEN" "$API/pulls?state=open&limit=50" \
+              | nix run nixpkgs#jq -- '[.[] | select(.head.ref == "bot/flake-lock")] | length')
+            if [ "$open" = 0 ]; then
+              curl -sf -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+                -d '{"title":"chore(flake): update inputs","head":"bot/flake-lock","base":"main","body":"Already built and deployed through the deploy branch."}' \
+                "$API/pulls" > /dev/null
+            fi
+          fi
+          git push -q --force "$remote" HEAD:refs/heads/deploy
+
+      - name: Keep the last builds only
+        run: |
+          for host in $HOSTS; do
+            ls -1t "$GCROOT_DIR/$host-"* | tail -n +$((KEEP + 1)) | xargs -r rm -f
+          done
