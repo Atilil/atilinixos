@@ -69,6 +69,9 @@ _: {
             expireDuplicatesFirst = true;
             findNoDups = true;
             ignoreAllDups = true;
+            size = 20000;
+            save = 20000;
+            extended = true;
           };
           setOptions = [
             "HIST_REDUCE_BLANKS"
