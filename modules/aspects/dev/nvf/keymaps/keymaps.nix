@@ -95,6 +95,13 @@ _: {
         silent = true;
       }
       {
+        key = "<C-z>";
+        mode = ["n" "x"];
+        action = "<Nop>";
+        desc = "Disable suspend: kitty sessions launch nvim without a parent shell to resume it";
+        silent = true;
+      }
+      {
         key = "Q";
         mode = ["n"];
         action = "q";
