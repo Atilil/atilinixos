@@ -52,6 +52,8 @@ _: {
         zsh = {
           enable = true;
           autocd = true;
+          # Explicit: zsh would otherwise infer vi mode from EDITOR=vim
+          defaultKeymap = "viins";
           enableCompletion = true;
           # Skip compaudit: fpath lives in the read-only Nix store
           completionInit = "autoload -U compinit && compinit -C";
@@ -95,13 +97,15 @@ _: {
 
             command -v just >/dev/null && eval "$(just --completions zsh)"
 
-            # Populate LS_COLORS via GNU dircolors so the completion menu
-            # colorizes files/directories by type (LS_COLORS is empty otherwise).
+            # Populate LS_COLORS via GNU dircolors so fzf-tab colorizes files/directories
+            # by type (LS_COLORS is empty otherwise).
             # Must run before the `list-colors ''${(s.:.)LS_COLORS}` zstyle below.
             eval "$(dircolors -b)"
 
-            zmodload zsh/complist
-            setopt menucomplete
+            # Vi mode: Esc switches to normal mode after 10ms instead of 400ms
+            KEYTIMEOUT=1
+            bindkey -M viins '^A' beginning-of-line
+            bindkey -M viins '^E' end-of-line
 
             # fish-like autosuggestions: complete from history and the completion engine
             ZSH_AUTOSUGGEST_STRATEGY=(history completion)
@@ -120,10 +124,8 @@ _: {
             zle -N edit-command-line
             bindkey '^X^E' edit-command-line
 
-            zstyle ':completion:*'                    menu select=2 search
-
-            bindkey -M menuselect '/'                 history-incremental-search-forward
-            bindkey -M menuselect '?'                 history-incremental-search-backward
+            # fzf-tab replaces the native menu; `menu no` lets it insert the unambiguous prefix
+            zstyle ':completion:*'                    menu no
 
             zstyle ':completion:*'                    matcher-list \
                                                       'm:{[:lower:]-}={[:upper:]_}' \
@@ -150,9 +152,8 @@ _: {
             zstyle ':completion:*:corrections'        format '%F{green}  %d (errors: %e)  %f'
             zstyle ':completion:*:messages'           format '%B%F{magenta}  %U%d%u  %f%b'
             zstyle ':completion:*:warnings'           format '%B%F{red} %Uno matches found%u %f%b'
-            zstyle ':completion:*:default'            list-colors ''${(s.:.)LS_COLORS}
-            # Menu-selection bar in ANSI 0-15 so it tracks kitty's live Noctalia palette
-            zstyle ':completion:*'                    list-colors 'ma=48;5;4;38;5;0'
+            # No `:default` tag: fzf-tab looks it up without one
+            zstyle ':completion:*'                    list-colors ''${(s.:.)LS_COLORS}
 
             zstyle ':completion:*:parameters'         ignored-patterns '_*'
 
@@ -169,10 +170,23 @@ _: {
             # completions keep full width instead of an empty preview pane.
             _ftb_preview='if [[ -d $realpath ]]; then eza -1 --icons --color=always --group-directories-first -- $realpath;
                           elif [[ -f $realpath ]]; then bat --color=always --style=numbers --line-range=:200 -- $realpath; fi'
-            for _cmd in cd z ls eza bat cat less nvim vim cp mv rm; do
+            for _cmd in cd ls eza bat cat less nvim vim cp mv rm; do
               zstyle ":fzf-tab:complete:$_cmd:*" fzf-preview "$_ftb_preview"
             done
             unset _ftb_preview _cmd
+
+            # Recipes from https://github.com/Aloxaf/fzf-tab/wiki/Preview
+            zstyle ':fzf-tab:complete:git-(checkout|switch):*' fzf-preview \
+              'case $group in
+                 "[modified file]") git diff --color=always -- $word ;;
+                 "[recent commit object name]") git show --color=always $word ;;
+                 *) git log --oneline --graph --color=always -20 $word ;;
+               esac'
+            zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview 'git diff --color=always -- $word'
+            zstyle ':fzf-tab:complete:systemctl-*:*'  fzf-preview 'SYSTEMD_COLORS=1 systemctl status -- $word'
+            zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
+              '[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
+            zstyle ':fzf-tab:complete:(-parameter-|-brace-parameter-|export|unset):*' fzf-preview 'echo ''${(P)word}'
           '';
         };
       };
