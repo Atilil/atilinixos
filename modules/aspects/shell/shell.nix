@@ -2,9 +2,19 @@ _: {
   den.aspects.shell = {
     os = _: {
       environment.pathsToLink = ["/share/zsh"];
-      programs.zsh.enable = true;
+      programs.zsh = {
+        enable = true;
+        # HM's .zshrc already runs compinit and dircolors, and starship owns the prompt
+        enableGlobalCompInit = false;
+        enableLsColors = false;
+        promptInit = "";
+      };
     };
-    homeManager = {pkgs, ...}: let
+    homeManager = {
+      lib,
+      pkgs,
+      ...
+    }: let
       aliases = {
         ll = "eza -lh --header";
         lla = "eza -alh --header";
@@ -28,6 +38,11 @@ _: {
         clonetab = "clone-in-kitty --type=tab";
       };
     in {
+      # compinit -C trusts the dump blindly, so drop it on each switch to pick up new completions
+      home.activation.resetZcompdump = lib.hm.dag.entryAfter ["writeBoundary"] ''
+        run rm -f "$HOME"/.zcompdump*
+      '';
+
       programs = {
         bash = {
           enable = true;
@@ -38,6 +53,8 @@ _: {
           enable = true;
           autocd = true;
           enableCompletion = true;
+          # Skip compaudit: fpath lives in the read-only Nix store
+          completionInit = "autoload -U compinit && compinit -C";
           autosuggestion.enable = true;
           syntaxHighlighting.enable = true;
           shellAliases = aliases;
