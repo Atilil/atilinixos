@@ -42,28 +42,14 @@
           efi.canTouchEfiVariables = true;
         };
 
-        plymouth = {
-          enable = true;
-          theme = "rings";
-          themePackages = [(pkgs.adi1090x-plymouth-themes.override {selected_themes = ["rings"];})];
-        };
         tmp.cleanOnBoot = true;
 
-        # Early KMS: without i915 in stage 1, the simpledrm → i915 handoff interrupts plymouth
+        # Early KMS for the plymouth aspect
         initrd.kernelModules = ["i915"];
-
-        # Silent boot, otherwise kernel/systemd messages show over the splash
-        consoleLogLevel = 3;
-        initrd.verbose = false;
 
         # Hibernate via swapfile, machine-specific
         resumeDevice = "/dev/nvme0n1p2";
-        kernelParams = [
-          "resume_offset=19476480"
-          "quiet"
-          "udev.log_level=3"
-          "rd.systemd.show_status=auto"
-        ];
+        kernelParams = ["resume_offset=19476480"];
       };
 
       networking.firewall.enable = true;

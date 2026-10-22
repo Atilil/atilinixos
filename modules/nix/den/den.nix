@@ -94,7 +94,7 @@ in {
       conf.includes = [];
 
       # Aspects common to all hosts: add here instead of repeating in each host
-      host.includes = with den.aspects; [home-manager];
+      host.includes = with den.aspects; [home-manager plymouth];
 
       # Aspects common to all users: add here instead of repeating in each user
       user.includes = with den; [
