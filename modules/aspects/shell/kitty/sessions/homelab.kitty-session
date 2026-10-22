@@ -5,13 +5,11 @@ cd /home/yoann/Projets/homelab
 
 launch --var=IS_NVIM=1 --title=homelab-nvim vim
 
-launch --location=vsplit --bias=20 claude --continue
+launch --location=vsplit --bias=30 claude --continue
 
 focus_matching_window title:homelab-nvim
 
 launch --location=hsplit --bias=20
-
-launch --location=vsplit --bias=50
 
 focus_matching_window title:homelab-nvim
 

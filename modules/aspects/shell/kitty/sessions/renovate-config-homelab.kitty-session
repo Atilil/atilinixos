@@ -1,0 +1,26 @@
+new_tab [Renovate-config-Homelab]
+layout splits
+enabled_layouts splits,stack
+cd /home/yoann/Projets/infra/renovate-config
+
+launch --var=IS_NVIM=1 --title=renovate-config-homelab-nvim vim
+
+launch --location=vsplit --bias=30 claude --continue
+
+focus_matching_window title:renovate-config-homelab-nvim
+
+launch --location=hsplit --bias=20
+
+focus_matching_window title:renovate-config-homelab-nvim
+
+# Git tab (not focused: the first tab stays active)
+new_tab [Lazygit]
+cd /home/yoann/Projets/infra/renovate-config
+
+launch --title=renovate-config-homelab-lazygit lazygit
+
+# File manager tab (not focused)
+new_tab [Yazi]
+cd /home/yoann/Projets/infra/renovate-config
+
+launch --title=renovate-config-homelab-yazi yazi

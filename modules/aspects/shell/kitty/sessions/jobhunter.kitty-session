@@ -5,7 +5,7 @@ cd /home/yoann/Documents/jobhunter
 
 launch --var=IS_NVIM=1 --title=jobhunter-nvim vim
 
-launch --location=vsplit --bias=40 claude --continue
+launch --location=vsplit --bias=50 claude --continue
 
 focus_matching_window title:jobhunter-nvim
 
