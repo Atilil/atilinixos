@@ -4,14 +4,24 @@ _: {
     pkgs,
     ...
   }: {
+    xdg.configFile."yamllint/config".text = ''
+      extends: relaxed
+      rules:
+          line-length: disable
+    '';
+
     programs.nvf.settings.vim = {
       diagnostics = {
         enable = true;
         nvim-lint = {
           enable = true;
           linters.tflint.cmd = "${pkgs.tflint}/bin/tflint";
+          linters.yamllint.cmd = "${pkgs.yamllint}/bin/yamllint";
           linters_by_ft = {
             terraform = ["tflint"];
+            yaml = ["yamllint"];
+            "yaml.gitlab" = ["yamllint"];
+            dockercompose = ["yamllint"];
           };
         };
         config = let
