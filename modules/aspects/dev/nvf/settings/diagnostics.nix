@@ -12,12 +12,6 @@ _: {
           linters.tflint.cmd = "${pkgs.tflint}/bin/tflint";
           linters_by_ft = {
             terraform = ["tflint"];
-            # ruff (LSP) already lints Python, so mypy stays off
-            python = [];
-            # bash-language-server already bridges shellcheck; avoid duplicate SC diagnostics
-            # from nvim-lint's own shellcheck run
-            sh = [];
-            bash = [];
           };
         };
         config = let

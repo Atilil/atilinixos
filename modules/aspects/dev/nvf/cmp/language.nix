@@ -43,6 +43,8 @@ _: {
         # ruff lints and formats, basedpyright does types and navigation; they run together
         # (see basedpyright.settings.typeCheckingMode in lsp.nix)
         lsp.servers = ["ruff" "basedpyright"];
+        # ruff already lints; skip nvim-lint's mypy
+        extraDiagnostics.enable = false;
       };
 
       rust = {
@@ -65,7 +67,11 @@ _: {
       # Ansible .j2 templates (jinja-lsp)
       jinja.enable = true;
 
-      bash.enable = true;
+      bash = {
+        enable = true;
+        # bash-language-server already bridges shellcheck
+        extraDiagnostics.enable = false;
+      };
       docker.enable = true;
       hcl.enable = true;
       helm.enable = true;

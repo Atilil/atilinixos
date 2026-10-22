@@ -81,8 +81,7 @@ _: {
         };
 
         servers = {
-          helm_ls = {};
-          ansiblels = {};
+          ansiblels.cmd = ["${pkgs.ansible-language-server}/bin/ansible-language-server" "--stdio"];
           basedpyright.settings.basedpyright.analysis.typeCheckingMode = "basic";
           yaml-language-server = {
             settings = {

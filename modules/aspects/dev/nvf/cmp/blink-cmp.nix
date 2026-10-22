@@ -113,15 +113,7 @@ _: {
 
         fuzzy = {
           implementation = "prefer_rust_with_warning";
-          sorts = mkLuaInline ''
-            function()
-              if vim.bo.filetype == "lua" then
-                return { 'score', 'label' }
-              else
-                return {}
-              end
-            end
-          '';
+          sorts = ["exact" "score" "sort_text"];
         };
 
         sources = {
@@ -136,6 +128,7 @@ _: {
               end
             '';
           };
+          providers.snippets.score_offset = -3;
           default = ["lsp" "path" "snippets" "buffer"];
         };
       };
