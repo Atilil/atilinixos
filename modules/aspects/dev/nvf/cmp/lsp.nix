@@ -2,8 +2,11 @@ _: {
   den.aspects.nvf.homeManager = {
     pkgs,
     lib,
+    flakePath,
     ...
-  }: {
+  }: let
+    inherit (lib.generators) mkLuaInline;
+  in {
     programs.nvf.settings.vim = {
       formatter.conform-nvim.setupOpts = {
         formatters_by_ft = {
@@ -105,6 +108,21 @@ _: {
             };
           };
           gitlab-ci-ls.filetypes = lib.mkForce ["yaml.gitlab"];
+          # helm-ls spawns yamlls from PATH, which has no such binary here
+          helm-ls.settings."helm-ls".yamlls.path = "${pkgs.yaml-language-server}/bin/yaml-language-server";
+
+          # First option completion waits for the flake options eval
+          nixd.settings.nixd = let
+            # Resolved at runtime so one config serves every fleet host
+            hostOptions = suffix:
+              mkLuaInline ''
+                "(builtins.getFlake \"${flakePath}\").nixosConfigurations." .. vim.uv.os_gethostname() .. ".options${suffix}"
+              '';
+          in {
+            nixpkgs.expr = "import (builtins.getFlake \"${flakePath}\").inputs.nixpkgs {}";
+            options.nixos.expr = hostOptions "";
+            options."home-manager".expr = hostOptions ".home-manager.users.type.getSubOptions []";
+          };
         };
       };
     };

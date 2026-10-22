@@ -9,7 +9,7 @@ _: {
 
       nix = {
         enable = true;
-        lsp.servers = ["nil"];
+        lsp.servers = ["nixd"];
       };
 
       markdown = {

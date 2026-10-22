@@ -56,6 +56,14 @@ _: {
         };
       };
 
+      # nvf only wires BufWritePost; lint on open and while editing too
+      autocmds = [
+        {
+          event = ["BufReadPost" "InsertLeave" "TextChanged"];
+          callback = lib.generators.mkLuaInline "function(args) nvf_lint(args.buf) end";
+        }
+      ];
+
       # Drop the built-in <C-w>d diagnostic float in favour of lspsaga
       luaConfigRC.drop-cw-diagnostics = ''
         pcall(vim.keymap.del, "n", "<C-w>d")
