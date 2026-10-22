@@ -62,7 +62,7 @@ _: {
             binary.path = "${pkgs.nixd}/bin/nixd";
             settings.nixd.options = {
               nixos.expr = "(builtins.getFlake \"${flakePath}\").nixosConfigurations.laptop.options";
-              home-manager.expr = "(builtins.getFlake \"${flakePath}\").nixosConfigurations.laptop.options.home-manager.users.yoann";
+              home-manager.expr = "(builtins.getFlake \"${flakePath}\").nixosConfigurations.laptop.options.home-manager.users.type.getSubOptions []";
             };
           };
           ruff.binary = {
