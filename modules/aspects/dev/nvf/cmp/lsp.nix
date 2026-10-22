@@ -91,17 +91,11 @@ _: {
               redhat.telemetry.enabled = false;
               yaml.format.enable = false;
               yaml.schemas = {
+                # Directory-based: name-based globs (*service*) also caught non-k8s files
                 kubernetes = [
-                  "*deployment*.yml"
-                  "*deployment*.yaml"
-                  "*service*.yml"
-                  "*service*.yaml"
-                  "*ingress*.yml"
-                  "*ingress*.yaml"
-                  "*configmap*.yml"
-                  "*configmap*.yaml"
-                  "*pod*.yml"
-                  "*pod*.yaml"
+                  "**/k8s/**/*.{yml,yaml}"
+                  "**/kubernetes/**/*.{yml,yaml}"
+                  "**/manifests/**/*.{yml,yaml}"
                 ];
                 "https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json" = [".gitlab-ci.yml"];
               };
