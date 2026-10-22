@@ -126,6 +126,7 @@ _: {
       };
 
       register = {
+        "<leader>a" = "+AI";
         "<leader>c" = "+Git-Conflict";
         "<leader>d" = "+Debug";
         "<leader>dg" = "+Step";
