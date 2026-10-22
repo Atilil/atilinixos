@@ -2,7 +2,7 @@ _: {
   den.aspects.nvf.homeManager = {pkgs, ...}: let
     # Claude: provider = "claude", model = "claude-haiku-5-5", its own key, drop the Gemini-only `optional`
     provider = "gemini";
-    model = "gemini-3.6-flash";
+    model = "gemini-2.5-flash-lite";
     keyFile = "/run/secrets/gemini_api_key_yoann";
   in {
     # minuet-ai: AI ghost-text suggestions (virtualtext) in DevOps filetypes.
@@ -62,7 +62,6 @@ _: {
                   optional = {
                     generationConfig = {
                       maxOutputTokens = 128,
-                      thinkingConfig = { thinkingLevel = "minimal" },
                     },
                   },
                 },
