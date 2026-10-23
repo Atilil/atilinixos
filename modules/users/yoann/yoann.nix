@@ -34,6 +34,15 @@ in {
         "msgcompose.font_face" = "JetBrainsMono Nerd Font";
       };
 
+      # account2 = Unified Folders; HM drops it from the list every start, so TB recreates it
+      # https://github.com/nix-community/home-manager/issues/5031
+      programs.thunderbird.profiles.${config.home.username}.accountsOrder = [
+        "admin"
+        "fenrisfr"
+        "yoann"
+        "account2"
+      ];
+
       userInfo = {
         realName = "Yoann Mathon";
         names = {
