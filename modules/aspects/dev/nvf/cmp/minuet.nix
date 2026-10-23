@@ -1,9 +1,10 @@
 _: {
   den.aspects.nvf.homeManager = {pkgs, ...}: let
-    # Claude: provider = "claude", model = "claude-haiku-5-5", its own key, drop the Gemini-only `optional`
-    provider = "gemini";
-    model = "gemini-2.5-flash-lite";
-    keyFile = "/run/secrets/gemini_api_key_yoann";
+    # Claude: provider = "claude", model = "claude-haiku-5-5", its own key and `optional`
+    provider = "codestral";
+    model = "codestral-latest";
+    # Dedicated Codestral key: not valid on the regular Mistral API (MISTRAL_API_KEY)
+    keyFile = "/run/secrets/codestral_api_key_yoann";
   in {
     # minuet-ai: AI ghost-text suggestions (virtualtext) in DevOps filetypes.
     programs.nvf.settings.vim.extraPlugins.minuet = {
@@ -28,6 +29,8 @@ _: {
 
             require("minuet").setup({
               provider = "${provider}",
+              -- FIM splits this budget before/after the cursor; halves the 16000 default
+              context_window = 8000,
               throttle = 2000,
               debounce = 800,
               request_timeout = 4,
@@ -58,11 +61,11 @@ _: {
               provider_options = {
                 ${provider} = {
                   model = "${model}",
+                  end_point = "https://codestral.mistral.ai/v1/fim/completions",
                   api_key = read_key,
                   optional = {
-                    generationConfig = {
-                      maxOutputTokens = 48,
-                    },
+                    max_tokens = 256,
+                    stop = { "\n\n" },
                   },
                 },
               },
