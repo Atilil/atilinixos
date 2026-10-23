@@ -26,7 +26,9 @@ its own `CLAUDE.md` with the context specific to it.
 
 | Repo | Remote | Contents |
 |---|---|---|
-| `homelab/` | `gitlab.com:atilili/homelab` | IaC monorepo being split into one repo per tool: OpenTofu, Ansible, Docker Swarm stacks (Komodo) |
+| `homelab/` | `gitlab.com:atilili/homelab` | IaC monorepo being split into one repo per tool; what remains: Docker Swarm stacks (Komodo) and the legacy `ansible/` |
+| `infra/opentofu/` | `forge.macopla.com:homelab/opentofu` | OpenTofu roots `prod/` and `ovh/` + modules; mirrors: GitLab (private), GitHub `atilili-homelab/opentofu` (public) |
+| `infra/ansible/` | `forge.macopla.com:homelab/ansible` | Ansible playbooks/roles, also the `homelab.base` collection |
 | `infra/packer/` | `forge.macopla.com:homelab/packer` | Packer Debian 13 templates — first repo split out of the monorepo; mirrors: GitLab (private backup), GitHub `atilili-homelab/packer` (public) |
 | `nixos/` | `gitlab.com:atilili/nixos` | Laptop config: NixOS, Hyprland, home-manager |
 | `notes/` | `gitlab.com:atilili/notes` | Obsidian vault (working notes) |
@@ -82,10 +84,10 @@ a task an agent covers.
 
 | Directory / domain | Agent |
 |---|---|
-| `homelab/opentofu/` | **opentofu** |
-| `homelab/ansible/` | **ansible** |
+| `infra/opentofu/` | **opentofu** |
+| `infra/ansible/` | **ansible** |
 | `homelab/stacks/` | **swarm** |
-| `homelab/packer/` | **packer** |
+| `infra/packer/` | **packer** |
 | `nixos/` | **nixos** |
 | Multi-file / multi-tool IaC audit | **infra-reviewer** |
 | `notes/` — Obsidian vault | **obsidian** |
