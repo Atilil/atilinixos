@@ -61,7 +61,7 @@ _: {
                   api_key = read_key,
                   optional = {
                     generationConfig = {
-                      maxOutputTokens = 128,
+                      maxOutputTokens = 48,
                     },
                   },
                 },
