@@ -61,15 +61,15 @@ _: {
           key = "<leader>Sl";
           mode = "n";
           lua = true;
-          desc = "Select and load a session";
-          action = ''function() require("mini.sessions").select("read") end'';
-        }
-        {
-          key = "<leader>Slt";
-          mode = "n";
-          lua = true;
           desc = "Load last session (local to cwd if present, else latest)";
           action = ''function() require("mini.sessions").read() end'';
+        }
+        {
+          key = "<leader>Ss";
+          mode = "n";
+          lua = true;
+          desc = "Select and load a session";
+          action = ''function() require("mini.sessions").select("read") end'';
         }
         {
           key = "<leader>Sd";
