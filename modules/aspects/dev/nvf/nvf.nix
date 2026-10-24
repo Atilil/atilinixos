@@ -43,7 +43,7 @@
 
           opts = {
             timeout = true;
-            timeoutlen = 1000;
+            tm = 1000;
 
             nu = true;
             relativenumber = true;
