@@ -7,6 +7,7 @@ _: {
         polkit.enable = true;
         pam.services.login.enableGnomeKeyring = true;
         sudo.wheelNeedsPassword = false;
+        pki.certificateFiles = [./_certs/pve-root-ca.crt]; # homelab proxmox cluster certificates
       };
 
       programs.seahorse.enable = true;
