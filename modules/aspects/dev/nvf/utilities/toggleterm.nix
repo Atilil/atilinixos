@@ -1,6 +1,34 @@
 _: {
-  den.aspects.nvf.homeManager = _: {
+  den.aspects.nvf.homeManager = {lib, ...}: let
+    inherit (lib.generators) mkLuaInline;
+  in {
     programs.nvf.settings.vim = {
+      autocmds = [
+        {
+          # Buffer-local so other :terminal buffers keep Esc and readline keys
+          desc = "Toggleterm: terminal-mode keymaps";
+          event = ["TermOpen"];
+          pattern = ["term://*#toggleterm#*"];
+          callback = mkLuaInline ''
+            function(args)
+              -- lazygit is a toggleterm terminal but needs Esc and C-h/j/k/l itself
+              if vim.api.nvim_buf_get_name(args.buf):find("lazygit", 1, true) then return end
+              local function map(lhs, rhs, desc)
+                vim.keymap.set("t", lhs, rhs, { buffer = args.buf, silent = true, desc = desc })
+              end
+              local function ss(fn) return function() require("smart-splits")[fn]() end end
+              -- Double Esc so a single one reaches zsh vi-mode
+              map("<Esc><Esc>", [[<C-\><C-n>]], "Terminal: leave terminal mode (double Esc)")
+              -- smart-splits keeps navigation working between nvim, terminal and kitty panes
+              map("<C-h>", ss("move_cursor_left"), "Terminal: move to left window")
+              map("<C-j>", ss("move_cursor_down"), "Terminal: move to window below")
+              map("<C-k>", ss("move_cursor_up"), "Terminal: move to window above")
+              map("<C-l>", ss("move_cursor_right"), "Terminal: move to right window")
+              map("<C-w>", [[<C-\><C-n><C-w>]], "Terminal: window command prefix")
+            end
+          '';
+        }
+      ];
       keymaps = [
         # Two independent toggleterm sessions
         {
@@ -15,53 +43,6 @@ _: {
           mode = ["n" "t"];
           action = "<Cmd>2ToggleTerm direction=float<CR>";
           desc = "Toggle floating terminal";
-          silent = true;
-        }
-        {
-          key = "<Esc>";
-          mode = ["t"];
-          action = "<C-\\><C-n>";
-          desc = "Toggle floating terminal";
-          silent = true;
-        }
-        # Call smart-splits so navigation works between nvim, terminal and kitty panes
-        {
-          key = "<C-h>";
-          mode = ["t"];
-          action = ''function() require("smart-splits").move_cursor_left() end'';
-          lua = true;
-          desc = "Terminal: move to left window";
-          silent = true;
-        }
-        {
-          key = "<C-j>";
-          mode = ["t"];
-          action = ''function() require("smart-splits").move_cursor_down() end'';
-          lua = true;
-          desc = "Terminal: move to window below";
-          silent = true;
-        }
-        {
-          key = "<C-k>";
-          mode = ["t"];
-          action = ''function() require("smart-splits").move_cursor_up() end'';
-          lua = true;
-          desc = "Terminal: move to window above";
-          silent = true;
-        }
-        {
-          key = "<C-l>";
-          mode = ["t"];
-          action = ''function() require("smart-splits").move_cursor_right() end'';
-          lua = true;
-          desc = "Terminal: move to right window";
-          silent = true;
-        }
-        {
-          key = "<C-w>";
-          mode = ["t"];
-          action = "<C-\\><C-n><C-w>";
-          desc = "Terminal: window command prefix";
           silent = true;
         }
       ];
