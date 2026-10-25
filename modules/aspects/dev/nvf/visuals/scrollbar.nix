@@ -11,7 +11,6 @@ _: {
         "DressingInput"
         "cmp_docs"
         "cmp_menu"
-        "noice"
         "prompt"
         "TelescopePrompt"
       ];

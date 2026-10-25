@@ -149,10 +149,11 @@ _: {
         end
 
         -- NOTE: move (normal + visual + operator-pending)
+        -- Class uses ]k/[k: ]c/[c are Neovim's built-in diff-hunk motions.
         vim.keymap.set({ 'n', 'x', 'o' }, ']f', function() mv.goto_next_start('@function.outer', 'textobjects') end, { desc = '[Code] Next function' })
         vim.keymap.set({ 'n', 'x', 'o' }, '[f', function() mv.goto_previous_start('@function.outer', 'textobjects') end, { desc = '[Code] Previous function' })
-        vim.keymap.set({ 'n', 'x', 'o' }, ']c', function() mv.goto_next_start('@class.outer', 'textobjects') end, { desc = '[Code] Next class' })
-        vim.keymap.set({ 'n', 'x', 'o' }, '[c', function() mv.goto_previous_start('@class.outer', 'textobjects') end, { desc = '[Code] Previous class' })
+        vim.keymap.set({ 'n', 'x', 'o' }, ']k', function() mv.goto_next_start('@class.outer', 'textobjects') end, { desc = '[Code] Next class' })
+        vim.keymap.set({ 'n', 'x', 'o' }, '[k', function() mv.goto_previous_start('@class.outer', 'textobjects') end, { desc = '[Code] Previous class' })
       '';
     };
   };

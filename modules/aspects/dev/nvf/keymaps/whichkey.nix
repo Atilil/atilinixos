@@ -160,11 +160,11 @@ _: {
         "[T" = "[Nav] First tag";
         "[a" = "[Nav] Previous arglist file";
         "[b" = "[Nav] Previous buffer";
-        "[c" = "[Code] Previous class";
         "[d" = "[Diag] Previous diagnostic";
         "[f" = "[Code] Previous function";
         "[h" = "[Git] Previous hunk";
         "[i" = "[Indent] Scope top";
+        "[k" = "[Code] Previous class";
         "[l" = "[Nav] Previous loclist item";
         "[q" = "[Nav] Previous quickfix item";
         "[t" = "[Nav] Previous tag";
@@ -183,11 +183,11 @@ _: {
         "]T" = "[Nav] Last tag";
         "]a" = "[Nav] Next arglist file";
         "]b" = "[Nav] Next buffer";
-        "]c" = "[Code] Next class";
         "]d" = "[Diag] Next diagnostic";
         "]f" = "[Code] Next function";
         "]h" = "[Git] Next hunk";
         "]i" = "[Indent] Scope bottom";
+        "]k" = "[Code] Next class";
         "]l" = "[Nav] Next loclist item";
         "]q" = "[Nav] Next quickfix item";
         "]t" = "[Nav] Next tag";
