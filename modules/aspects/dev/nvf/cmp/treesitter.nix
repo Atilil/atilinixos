@@ -57,7 +57,6 @@ _: {
           kitty
           luadoc
           make
-          python
           requirements
           todotxt
           typescript

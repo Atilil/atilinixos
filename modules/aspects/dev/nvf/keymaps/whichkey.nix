@@ -42,16 +42,12 @@ _: {
               { "]h", desc = "[Git] Next hunk" },
               { "[H", desc = "[Git] First hunk" },
               { "]H", desc = "[Git] Last hunk" },
-              { "[i", desc = "[Indent] Scope top" },
-              { "]i", desc = "[Indent] Scope bottom" },
               { "[n", desc = "[Node] Previous node" },
               { "]n", desc = "[Node] Next node" },
               { "[N", desc = "[Node] Previous sibling" },
               { "]N", desc = "[Node] Next sibling" },
               { "[%", desc = "[Match] Previous unmatched" },
               { "]%", desc = "[Match] Next unmatched" },
-              { "ai", desc = "[Select] Indent scope (with border)" },
-              { "ii", desc = "[Select] Indent scope" },
               { "an", desc = "[Node] Parent (outer)" },
               { "in", desc = "[Node] Child (inner)" },
               { "a%", desc = "[Match] Matched pair textobject" },
@@ -163,7 +159,6 @@ _: {
         "[d" = "[Diag] Previous diagnostic";
         "[f" = "[Code] Previous function";
         "[h" = "[Git] Previous hunk";
-        "[i" = "[Indent] Scope top";
         "[k" = "[Code] Previous class";
         "[l" = "[Nav] Previous loclist item";
         "[q" = "[Nav] Previous quickfix item";
@@ -186,7 +181,6 @@ _: {
         "]d" = "[Diag] Next diagnostic";
         "]f" = "[Code] Next function";
         "]h" = "[Git] Next hunk";
-        "]i" = "[Indent] Scope bottom";
         "]k" = "[Code] Next class";
         "]l" = "[Nav] Next loclist item";
         "]q" = "[Nav] Next quickfix item";

@@ -9,7 +9,7 @@ _: {
         pattern = ["*"];
         callback =
           mkLuaInline
-          ''function() vim.highlight.on_yank({ higroup = 'visual', timeout = 300 }) end'';
+          ''function() vim.hl.on_yank({ higroup = 'visual', timeout = 300 }) end'';
       }
       {
         desc = "Preserve last editing position";
