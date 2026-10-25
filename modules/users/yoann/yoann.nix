@@ -59,7 +59,6 @@ in {
         };
       };
 
-      # Overrides the layout the hyprland aspect sets with lib.mkDefault
       wayland.windowManager.hyprland.settings.config.input = {
         kb_layout = "us,us";
         kb_variant = "intl,";
