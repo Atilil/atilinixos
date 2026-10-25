@@ -26,11 +26,22 @@ _: {
             vim.api.nvim_set_hl(0, "TSPunctSpecial", { fg = base0A })
           end
 
-          require('matugen').setup()
+          -- matugen.lua only exists once Noctalia has rendered its template; silent fallback
+          -- keeps the rest of this block alive, and the signal handler retries on the next swap.
+          local themed
+          local function apply_theme()
+            themed = pcall(function() require('matugen').setup() end)
+            if not themed then
+              require('base16-colorscheme').setup('onedark')
+            end
+          end
+
+          apply_theme()
           fix_theme()
 
           local sig = vim.uv.new_signal()
           sig:start("sigusr1", vim.schedule_wrap(function()
+            if not themed then apply_theme() end
             vim.defer_fn(fix_theme, 100)
           end))
         '';
