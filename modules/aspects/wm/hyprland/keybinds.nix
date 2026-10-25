@@ -75,9 +75,6 @@ _: {
     wayland.windowManager.hyprland.settings = {
       config = {
         input = {
-          kb_layout = lib.mkDefault "fr";
-          kb_variant = lib.mkDefault "oss";
-          kb_options = lib.mkDefault "eurosign:e,caps:escape";
           touchpad.natural_scroll = true;
         };
         binds = {
