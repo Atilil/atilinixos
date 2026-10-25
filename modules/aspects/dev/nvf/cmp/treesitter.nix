@@ -119,10 +119,17 @@ _: {
       };
 
       luaConfigPost = ''
+        -- Helm only when a Chart.yaml sits above; priority beats the generic
+        -- templates/ -> yaml.gitlab rule, and nil falls through to it.
         vim.filetype.add({
           pattern = {
-            [".*/templates/.*%.yaml"] = "helm",
-            [".*/templates/.*%.yml"] = "helm",
+            [".*/templates/.*%.ya?ml"] = {
+              function(path)
+                local chart = vim.fs.find("Chart.yaml", { upward = true, path = vim.fs.dirname(path), type = "file" })[1]
+                return chart and "helm" or nil
+              end,
+              { priority = 10 },
+            },
           },
         })
 
