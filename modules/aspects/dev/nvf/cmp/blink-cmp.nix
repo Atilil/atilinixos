@@ -75,8 +75,8 @@ _: {
             border = "solid";
             auto_show = true;
             scrollbar = false;
-            winhighlight = "Normal:Normal,FloatBorder:NoiceCmdlinePopupBorder,CursorLine:BlinkCmpMenuSelection,Search:None";
-            # Keep the popup off noice's cmdline
+            winhighlight = "Normal:Normal,FloatBorder:String,CursorLine:BlinkCmpMenuSelection,Search:None";
+            # Anchor the popup to the ui2 cmdline, falling back to the last screen line
             cmdline_position = mkLuaInline ''
               function()
                 if vim.g.ui_cmdline_pos ~= nil then

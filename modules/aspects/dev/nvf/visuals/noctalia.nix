@@ -16,7 +16,12 @@ _: {
             vim.api.nvim_set_hl(0, "Normal",   { bg = "none" })
             vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
 
-            local base0A = require('base16-colorscheme').colors.base0A
+            -- base16 sets NormalFloat to base00, identical to the editor: floats (hover, ui2 msg)
+            -- blend in. base01 is the palette's next shade, so it follows live theme swaps.
+            local colors = require('base16-colorscheme').colors
+            vim.api.nvim_set_hl(0, "NormalFloat", { fg = colors.base05, bg = colors.base01 })
+
+            local base0A = colors.base0A
             vim.api.nvim_set_hl(0, "TSPunctDelimiter", { fg = base0A })
             vim.api.nvim_set_hl(0, "TSPunctSpecial", { fg = base0A })
           end
