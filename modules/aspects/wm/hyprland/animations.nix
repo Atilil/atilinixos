@@ -22,15 +22,6 @@ _: {
             }
           ];
         }
-        {
-          _args = [
-            "linear"
-            {
-              type = "bezier";
-              points = [[0 0] [1 1]];
-            }
-          ];
-        }
       ];
 
       animation = [
