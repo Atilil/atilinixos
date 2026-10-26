@@ -15,13 +15,6 @@ _: {
           scale = 1;
         }
         {
-          output = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-          mode = "3840x1080";
-          position = "-3840x0";
-          scale = 1;
-          vrr = 1;
-        }
-        {
           output = "desc:LG Electronics 38GL950G 0x01010101";
           mode = "3840x1600";
           position = "1920x-1600";

@@ -56,38 +56,6 @@ _: {
         monitor = "desc:LG Display 0x06E0";
         persistent = true;
       }
-
-      # Ultrawide Daniel
-      # {
-      #   workspace = "1";
-      #   monitor = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-      #   persistent = true;
-      # }
-      # {
-      #   workspace = "2";
-      #   monitor = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-      #   persistent = true;
-      # }
-      # {
-      #   workspace = "3";
-      #   monitor = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-      #   persistent = true;
-      # }
-      # {
-      #   workspace = "4";
-      #   monitor = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-      #   persistent = true;
-      # }
-      # {
-      #   workspace = "5";
-      #   monitor = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-      #   persistent = true;
-      # }
-      # {
-      #   workspace = "6";
-      #   monitor = "desc:Samsung Electric Company C49HG9x H4ZMC00740";
-      #   persistent = true;
-      # }
     ];
   };
 }
