@@ -18,7 +18,7 @@ _: {
               sub:remove()
             end
           end)
-          hl.dispatch(hl.dsp.exec_cmd("kitty --class scratch"))
+          hl.dispatch(hl.dsp.exec_cmd("uwsm app -- kitty --class scratch"))
           hl.dispatch(toggle)
           return
         end

@@ -4,11 +4,11 @@ _: {
       "hyprland.start"
       (lib.generators.mkLuaInline ''
         function()
-          hl.exec_cmd("vesktop")
-          hl.exec_cmd("Telegram")
-          hl.exec_cmd("zapzap")
-          hl.exec_cmd("thunderbird")
-          hl.exec_cmd("kitty --class scratch")
+          hl.exec_cmd("uwsm app -- vesktop")
+          hl.exec_cmd("uwsm app -- Telegram")
+          hl.exec_cmd("uwsm app -- zapzap")
+          hl.exec_cmd("uwsm app -- thunderbird")
+          hl.exec_cmd("uwsm app -- kitty --class scratch")
         end
       '')
     ];
