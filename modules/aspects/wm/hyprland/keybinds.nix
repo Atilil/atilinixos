@@ -110,8 +110,7 @@ _: {
         (bind "${leader} + SHIFT + F" dsp.fullscreen)
         (bind "${leader} + P" dsp.pin)
         (bind "${leader} + M" dsp.swapMaster)
-        (bind "${leader} + code:49" dsp.scratchToggle)
-        (bind "${leader} + BackSpace" dsp.scratchToggle) # 2 keys on the Corne (Bsp thumb)
+        (bind "${leader} + BackSpace" dsp.scratchToggle) # Bsp thumb key on the Corne
         (bind "ALT + Tab" dsp.cycleNext)
         (bind "SHIFT + ALT + Tab" dsp.cyclePrev)
 
