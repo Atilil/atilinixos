@@ -4,8 +4,6 @@ _: {
       misc = {
         disable_hyprland_logo = true;
         force_default_wallpaper = 0;
-        vrr = 0;
-        mouse_move_enables_dpms = false;
         key_press_enables_dpms = true;
         focus_on_activate = true;
         disable_watchdog_warning = true;

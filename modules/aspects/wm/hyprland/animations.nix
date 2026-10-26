@@ -1,8 +1,6 @@
 _: {
   den.aspects.hyprland.homeManager = _: {
     wayland.windowManager.hyprland.settings = {
-      config.animations.enabled = true;
-
       curve = [
         {
           _args = [

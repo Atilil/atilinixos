@@ -36,7 +36,6 @@ _: {
       ];
 
       config.render = {
-        cm_enabled = true;
         direct_scanout = 2;
       };
     };

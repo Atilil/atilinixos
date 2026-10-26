@@ -79,9 +79,7 @@ _: {
         };
         binds = {
           workspace_back_and_forth = true;
-          workspace_center_on = 1;
           allow_workspace_cycles = true;
-          ignore_group_lock = false;
           movefocus_cycles_fullscreen = true;
         };
       };

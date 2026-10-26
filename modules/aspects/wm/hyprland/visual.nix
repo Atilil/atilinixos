@@ -2,10 +2,8 @@ _: {
   den.aspects.hyprland.homeManager = _: {
     wayland.windowManager.hyprland.settings.config = {
       general = {
-        gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        layout = "dwindle";
         snap = {
           enabled = true;
           respect_gaps = true;
@@ -14,15 +12,11 @@ _: {
 
       decoration = {
         rounding = 12;
-        rounding_power = 2;
         shadow = {
-          enabled = true;
           range = 6;
-          render_power = 3;
           color = "rgba(1e1e2eaa)";
         };
         blur = {
-          enabled = true;
           size = 4;
           passes = 2;
           vibrancy = 1;
@@ -41,7 +35,6 @@ _: {
       dwindle.preserve_split = true;
       master = {
         mfact = 0.65;
-        new_status = "slave";
         new_on_top = true;
         orientation = "right";
       };
