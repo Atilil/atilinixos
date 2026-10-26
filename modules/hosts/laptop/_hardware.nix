@@ -25,11 +25,5 @@
   #INFO: Enable GuC/HuC firmware for better GPU scheduling and power management
   boot.extraModprobeConfig = "options i915 enable_guc=2";
 
-  #INFO: Stable DRM device path for Hyprland — avoids /dev/dri/cardX index shifting on reboot
-  system.activationScripts.hyprCardSymlink = ''
-    ln -sf /dev/dri/by-path/pci-0000:00:02.0-card /run/hyprland-card
-  '';
-  environment.sessionVariables.WLR_DRM_DEVICES = "/run/hyprland-card";
-
   services.libinput.enable = true;
 }
