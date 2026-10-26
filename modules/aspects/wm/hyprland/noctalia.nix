@@ -43,7 +43,6 @@ _: {
             directory = "${home}/Pictures/Screenshots";
             skip_annotate_on_copy_save = true;
           };
-          window_switcher.style = "compact";
         };
 
         # Which apps Noctalia themes; each needs its own wiring (see btop.nix,
