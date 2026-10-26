@@ -48,8 +48,11 @@ _: {
       '';
     leader = "SUPER";
     dsp = {
+      # Quick commands skip uwsm (~90 ms per launch).
       exec = cmd: lua ''hl.dsp.exec_cmd("${cmd}")'';
-      execTermFloat = cmd: lua ''hl.dsp.exec_cmd("kitty --class center-float ${cmd}")'';
+      # Own systemd scope: the app survives a compositor crash.
+      app = cmd: lua ''hl.dsp.exec_cmd("uwsm app -- ${cmd}")'';
+      execTermFloat = cmd: lua ''hl.dsp.exec_cmd("uwsm app -- kitty --class center-float ${cmd}")'';
       move = direction: lua ''hl.dsp.window.move({ direction = "${direction}" })'';
       focus = direction: lua ''hl.dsp.focus({ direction = "${direction}" })'';
       workspace = ws: lua ''hl.dsp.focus({ workspace = "${ws}" })'';
@@ -159,7 +162,7 @@ _: {
         (bind "${leader} + SHIFT + Escape" (dsp.moveTo "special:quick"))
 
         # Applications
-        (bind "${leader} + Return" (dsp.exec "kitty"))
+        (bind "${leader} + Return" (dsp.app "kitty"))
         (bind "${leader} + V" (dsp.exec "noctalia msg panel-toggle clipboard"))
         (bind "${leader} + ALT + Delete" (dsp.execTermFloat "btop"))
 
@@ -170,7 +173,7 @@ _: {
         # Capture
         (bind "${leader} + S" (lua ''hl.dsp.exec_cmd("grim - | satty -f -")''))
         (bind "${leader} + SHIFT + S" (lua ''hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | satty -f -")''))
-        (bind "${leader} + SHIFT + R" (lua ''hl.dsp.exec_cmd("wf-recorder -g \"$(slurp)\"")''))
+        (bind "${leader} + SHIFT + R" (dsp.app "wf-recorder -g \\\"$(slurp)\\\""))
 
         # Audio
         (bind "XF86AudioRaiseVolume" (dsp.exec "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"))
