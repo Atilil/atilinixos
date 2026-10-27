@@ -56,6 +56,29 @@ _: {
       hl.bind("switch:on:Lid Switch", edpOff, { locked = true })
       hl.bind("switch:off:Lid Switch", edpOn, { locked = true })
 
+      -- Desk modes. The top LG sits alone on the DisplayLink dock, so disabling
+      -- it is safe; the bottom LG is never touched. Without a matching output
+      -- hl.monitor only stores a rule, so both binds are harmless undocked.
+      local topLg = "desc:LG Electronics 38GL950G 0x01010101"
+
+      -- Disable is asynchronous: keep eDP-1 unless another external output
+      -- than the top LG remains, or the session would be left blank.
+      hl.bind("SUPER + F1", function()
+        local other = false
+        for _, m in ipairs(realMonitors()) do
+          if m.description ~= edpDesc and not m.description:find("38GL950G", 1, true) then
+            other = true
+          end
+        end
+        hl.monitor({ output = topLg, disabled = true })
+        if other then edpOff() end
+      end)
+
+      hl.bind("SUPER + F2", function()
+        hl.monitor({ output = topLg, disabled = false })
+        if not lidClosed() then edpOn() end
+      end)
+
       -- Start with the lid already closed. The retry covers a dock whose
       -- outputs show up after the session starts.
       hl.on("hyprland.start", function()
