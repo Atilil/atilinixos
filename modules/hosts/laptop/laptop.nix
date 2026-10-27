@@ -46,10 +46,6 @@
 
         # Early KMS for the plymouth aspect
         initrd.kernelModules = ["i915"];
-
-        # Hibernate via swapfile, machine-specific
-        resumeDevice = "/dev/nvme0n1p2";
-        kernelParams = ["resume_offset=19476480"];
       };
 
       networking.firewall.enable = true;

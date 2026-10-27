@@ -28,17 +28,10 @@ _: {
         upower.enable = true;
         thermald.enable = true;
 
-        acpid = {
-          enable = true;
-          handlers.power-hibernate = {
-            event = "button/power.*";
-            action = "systemctl hibernate";
-          };
-        };
         logind.settings.Login = {
-          HandlePowerKey = "ignore";
+          HandlePowerKey = "suspend";
           HandlePowerKeyLongPress = "poweroff";
-          HandleLidSwitch = "suspend-then-hibernate";
+          HandleLidSwitch = "suspend";
           HandleLidSwitchExternalPower = "lock";
           HandleLidSwitchDocked = "ignore";
         };
