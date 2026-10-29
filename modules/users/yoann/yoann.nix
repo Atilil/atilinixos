@@ -54,8 +54,9 @@ in {
           secondary = "fenrisfr@gmail.com";
         };
         publicKeys = {
-          # Agent label "SSH - Forgejo": SSH auth and commit signing on the forge
-          forgejo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALa9tW6+3eWWGwFCPJk/8m3AJNi2YeeL9o15cMovFZ0";
+          macopla_root = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFM6msAQtQM2H5CtSTtuJ03Pn6cSYQ7swOjBy1TIgsJr SSH - Macopla Root";
+          forgejo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALa9tW6+3eWWGwFCPJk/8m3AJNi2YeeL9o15cMovFZ0 SSH - Forgejo";
+          gitlab = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOB10n0wXfQ0M1Np1jNe01TBnd/9sYNWla0SRxYEzYoF SSH - Gitlab";
         };
       };
 

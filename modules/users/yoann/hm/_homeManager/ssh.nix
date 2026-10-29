@@ -1,11 +1,12 @@
 {config, ...}: {
   # OpenSSH reads the public file to pick which key to ask the agent for
-  home.file.".ssh/forgejo.pub".text = "${config.userInfo.publicKeys.forgejo} SSH - Forgejo\n";
-
-  # Declarative host keys for the family fleet (ideapad = maria's laptop, via VPN).
-  home.file.".ssh/known_hosts_fleet".text = ''
-    ideapad.macopla.home,10.86.99.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPwBPXsY40GDffLh3UKf/LE6arCB/YeQ64fWox5+Hjzs
-  '';
+  home.file = {
+    ".ssh/forgejo.pub".text = "${config.userInfo.publicKeys.forgejo}";
+    ".ssh/gitlab.pub".text = "${config.userInfo.publicKeys.gitlab}";
+    ".ssh/macopla_root.pub".text = "${config.userInfo.publicKeys.macopla_root}";
+    # Declarative host keys for the family fleet (ideapad = maria's laptop, via VPN).
+    ".ssh/known_hosts_fleet".text = ''ideapad.macopla.home,10.86.99.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPwBPXsY40GDffLh3UKf/LE6arCB/YeQ64fWox5+Hjzs'';
+  };
 
   programs.ssh = {
     enable = true;
@@ -17,16 +18,20 @@
         CanonicalizeMaxDots = 0;
         UserKnownHostsFile = "~/.ssh/known_hosts ~/.ssh/known_hosts_fleet";
       };
-      # Maria's laptop, as root. First match wins: beats the `yoann` of the canonical block below.
       "ideapad ideapad.macopla.home" = {
         User = "root";
       };
-      "Match canonical Host *.macopla.home,10.86.*" = {
+      "Match canonical Host *.macopla.home,10.86.* User *,!root" = {
         User = "yoann";
         IdentityFile = "~/.ssh/macopla";
         IdentitiesOnly = true;
       };
-      # Self-hosted Forgejo: Git-over-SSH listens on 2222, not 22
+      "Match canonical Host *.macopla.home,10.86.* User root" = {
+        IdentityFile = "~/.ssh/macopla_root";
+        IdentitiesOnly = true;
+      };
+
+      # GIT
       "forge.macopla.com" = {
         Port = 2222;
         User = "git";
