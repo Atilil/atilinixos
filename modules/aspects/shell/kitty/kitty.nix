@@ -81,7 +81,6 @@
 
           allow_remote_control = "yes";
           listen_on = "unix:@mykitty";
-          # TODO: set startup_session once sessions are usable
           allow_cloning = "ask";
         };
 
