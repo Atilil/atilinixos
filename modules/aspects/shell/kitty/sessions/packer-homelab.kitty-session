@@ -3,9 +3,9 @@ layout splits
 enabled_layouts splits,stack
 cd /home/yoann/Projets/infra/packer
 
-launch --var=IS_NVIM=1 --title=packer-homelab-nvim vim
+launch --var=IS_NVIM=1 --title=packer-homelab-nvim kitten run-shell direnv exec . vim
 
-launch --location=vsplit --bias=30 claude --continue
+launch --location=vsplit --bias=30 kitten run-shell direnv exec . claude --continue
 
 focus_matching_window title:packer-homelab-nvim
 
@@ -17,10 +17,10 @@ focus_matching_window title:packer-homelab-nvim
 new_tab [Lazygit]
 cd /home/yoann/Projets/infra/packer
 
-launch --title=packer-homelab-lazygit lazygit
+launch --title=packer-homelab-lazygit kitten run-shell direnv exec . lazygit
 
 # File manager tab (not focused)
 new_tab [Yazi]
 cd /home/yoann/Projets/infra/packer
 
-launch --title=packer-homelab-yazi yazi
+launch --title=packer-homelab-yazi kitten run-shell direnv exec . yazi

@@ -53,6 +53,20 @@ def _clean_exe(exe: str) -> str:
     return ALIASES.get(name, name)
 
 
+def _launched_exe(cmdline: list[str]) -> str | None:
+    """Strip session wrappers: `kitten run-shell direnv exec . vim` -> `vim`."""
+    args = list(cmdline)
+    while args:
+        name = os.path.basename(args[0])
+        if name == "kitten" and args[1:2] == ["run-shell"]:
+            args = [a for a in args[2:] if not a.startswith("-")]
+        elif name == "direnv" and args[1:2] == ["exec"]:
+            args = args[3:]
+        else:
+            return args[0]
+    return None
+
+
 def _process_name(tab_id: int) -> str | None:
     tab = get_boss().tab_for_id(tab_id)
     if tab is None:
@@ -68,9 +82,12 @@ def _process_name(tab_id: int) -> str | None:
         window = tab.active_window
     if window is None:
         return None
-    # oldest=True: kitty defaults to the highest PID of the tty foreground group,
-    # which for `claude` is one of its MCP server children, not the program itself
-    return _clean_exe(window.get_exe_of_child(oldest=True))
+    # Oldest PID: the highest one is a child (e.g. claude's MCP servers), not the program.
+    # Launch argv as fallback: the first draw happens before the program has started.
+    procs = window.child.foreground_processes
+    cmdline = min(procs, key=lambda p: p["pid"])["cmdline"] if procs else window.child.argv
+    exe = _launched_exe(cmdline) or window.get_exe_of_child(oldest=True)
+    return _clean_exe(exe)
 
 
 def _draw_session_pill(draw_data: DrawData, screen: Screen, name: str) -> None:

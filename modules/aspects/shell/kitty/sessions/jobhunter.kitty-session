@@ -3,9 +3,9 @@ layout splits
 enabled_layouts splits,stack
 cd /home/yoann/Documents/jobhunter
 
-launch --var=IS_NVIM=1 --title=jobhunter-nvim vim
+launch --var=IS_NVIM=1 --title=jobhunter-nvim kitten run-shell direnv exec . vim
 
-launch --location=vsplit --bias=50 claude --continue
+launch --location=vsplit --bias=50 kitten run-shell direnv exec . claude --continue
 
 focus_matching_window title:jobhunter-nvim
 
@@ -13,4 +13,4 @@ focus_matching_window title:jobhunter-nvim
 new_tab [Yazi]
 cd /home/yoann/Documents/jobhunter
 
-launch --title=jobhunter-yazi yazi
+launch --title=jobhunter-yazi kitten run-shell direnv exec . yazi

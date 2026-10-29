@@ -3,9 +3,9 @@ layout splits
 enabled_layouts splits,stack
 cd /home/yoann/Projets/nixos
 
-launch --var=IS_NVIM=1 --title=nixos-nvim vim
+launch --var=IS_NVIM=1 --title=nixos-nvim kitten run-shell direnv exec . vim
 
-launch --location=vsplit --bias=30 claude --continue
+launch --location=vsplit --bias=30 kitten run-shell direnv exec . claude --continue
 
 focus_matching_window title:nixos-nvim
 
@@ -17,10 +17,10 @@ focus_matching_window title:nixos-nvim
 new_tab [Lazygit]
 cd /home/yoann/Projets/nixos
 
-launch --title=nixos-lazygit lazygit
+launch --title=nixos-lazygit kitten run-shell direnv exec . lazygit
 
 # File manager tab (not focused)
 new_tab [Yazi]
 cd /home/yoann/Projets/nixos
 
-launch --title=nixos-yazi yazi
+launch --title=nixos-yazi kitten run-shell direnv exec . yazi
