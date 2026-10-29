@@ -18,40 +18,35 @@ jobs:
       - run: nix flake check --print-build-logs
       # TODO: fail if flake.nix is stale vs the modules (`nix run .#write-flake` then `git diff --exit-code flake.nix`)
 
+  #INFO: Keep HOSTS in sync with `fleet` (modules/nix/den/den.nix)
   build:
     needs: check
     runs-on: nixos
-    strategy:
-      fail-fast: false
-      matrix:
-        #INFO: Keep in sync with the hosts in `fleet` (modules/nix/den/den.nix). HM is built inside each toplevel
-        include:
-          - target: laptop
-            attr: nixosConfigurations.laptop.config.system.build.toplevel
-          - target: ideapad
-            attr: nixosConfigurations.ideapad.config.system.build.toplevel
     env:
-      GCROOT_DIR: /home/runner/gcroots/ci
-      KEEP: 3
+      HOSTS: laptop ideapad
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Plan (built vs substituted)
-        run: nix build --dry-run '.#${{ matrix.attr }}'
-
-      #INFO: Harmonia serves mouse's store as is: a gcroot is what keeps a build in the cache.
-      #      PR builds get none, so the next GC drops them.
-      - name: Build
+      - name: Build what no cache provides
         run: |
-          if [ "${{ github.event_name }}" = pull_request ]; then
-            nix build --print-build-logs --no-link '.#${{ matrix.attr }}'
-          else
-            mkdir -p "$GCROOT_DIR"
-            nix build --print-build-logs \
-              --out-link "$GCROOT_DIR/${{ matrix.target }}-${{ github.run_id }}" '.#${{ matrix.attr }}'
-            nix path-info -Sh "$GCROOT_DIR/${{ matrix.target }}-${{ github.run_id }}"
-          fi
+          set -euo pipefail
+          plan=$(mktemp)
+          for host in $HOSTS; do
+            echo "::group::$host"
+            attr=".#nixosConfigurations.$host.config.system.build.toplevel"
 
-      - name: Keep the last builds only
-        if: github.event_name != 'pull_request'
-        run: ls -1t "$GCROOT_DIR/${{ matrix.target }}-"* | tail -n +$((KEEP + 1)) | xargs -r rm -f
+            nix build --dry-run "$attr" 2>&1 | tee "$plan"
+
+            mapfile -t drvs < <(awk '/will be built:$/ {b=1; next} /^[^ ]/ {b=0} b && /\.drv$/ {print $1}' "$plan")
+            todo=()
+            for drv in "${drvs[@]}"; do
+              # Skip assembly derivations (toplevel, system-path...): building them pulls the whole closure
+              [ "$(nix-store --query --binding preferLocalBuild "$drv" 2>/dev/null || true)" = 1 ] || todo+=("$drv^*")
+            done
+
+            echo "$host: ${#drvs[@]} derivations not in any cache, ${#todo[@]} to build"
+            if [ "${#todo[@]}" -gt 0 ]; then
+              nix build --no-link --print-build-logs "${todo[@]}"
+            fi
+            echo "::endgroup::"
+          done
