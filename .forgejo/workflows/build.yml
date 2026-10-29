@@ -29,24 +29,8 @@ jobs:
 
       - name: Build what no cache provides
         run: |
-          set -euo pipefail
-          plan=$(mktemp)
           for host in $HOSTS; do
             echo "::group::$host"
-            attr=".#nixosConfigurations.$host.config.system.build.toplevel"
-
-            nix build --dry-run "$attr" 2>&1 | tee "$plan"
-
-            mapfile -t drvs < <(awk '/will be built:$/ {b=1; next} /^[^ ]/ {b=0} b && /\.drv$/ {print $1}' "$plan")
-            todo=()
-            for drv in "${drvs[@]}"; do
-              # Skip assembly derivations (toplevel, system-path...): building them pulls the whole closure
-              [ "$(nix-store --query --binding preferLocalBuild "$drv" 2>/dev/null || true)" = 1 ] || todo+=("$drv^*")
-            done
-
-            echo "$host: ${#drvs[@]} derivations not in any cache, ${#todo[@]} to build"
-            if [ "${#todo[@]}" -gt 0 ]; then
-              nix build --no-link --print-build-logs "${todo[@]}"
-            fi
+            .forgejo/scripts/build-uncached.sh "$host"
             echo "::endgroup::"
           done
