@@ -1,0 +1,26 @@
+new_tab [Docker-Homelab]
+layout splits
+enabled_layouts splits,stack
+cd /home/yoann/Projets/infra/docker
+
+launch --var=IS_NVIM=1 --title=docker-homelab-nvim kitten run-shell direnv exec . nvim
+
+launch --location=vsplit --bias=30 kitten run-shell direnv exec . claude --continue
+
+focus_matching_window title:docker-homelab-nvim
+
+launch --location=hsplit --bias=20
+
+focus_matching_window title:docker-homelab-nvim
+
+# Git tab (not focused: the first tab stays active)
+new_tab [Lazygit]
+cd /home/yoann/Projets/infra/docker
+
+launch --title=docker-homelab-lazygit kitten run-shell direnv exec . lazygit
+
+# File manager tab (not focused)
+new_tab [Yazi]
+cd /home/yoann/Projets/infra/docker
+
+launch --title=docker-homelab-yazi kitten run-shell direnv exec . yazi

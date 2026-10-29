@@ -3,7 +3,7 @@ layout splits
 enabled_layouts splits,stack
 cd /home/yoann/Documents/jobhunter
 
-launch --var=IS_NVIM=1 --title=jobhunter-nvim kitten run-shell direnv exec . vim
+launch --var=IS_NVIM=1 --title=jobhunter-nvim kitten run-shell direnv exec . nvim
 
 launch --location=vsplit --bias=50 kitten run-shell direnv exec . claude --continue
 

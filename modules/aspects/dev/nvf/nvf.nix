@@ -23,7 +23,8 @@
 
         settings.vim = {
           viAlias = true;
-          vimAlias = true;
+          # Defaults to true: would shadow the real vim from vim.nix
+          vimAlias = false;
 
           # Experimental Lua loader, speeds up startup
           enableLuaLoader = true;

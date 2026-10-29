@@ -3,7 +3,7 @@ layout splits
 enabled_layouts splits,stack
 cd /home/yoann/Projets/infra/opentofu
 
-launch --var=IS_NVIM=1 --title=opentofu-homelab-nvim kitten run-shell direnv exec . vim
+launch --var=IS_NVIM=1 --title=opentofu-homelab-nvim kitten run-shell direnv exec . nvim
 
 launch --location=vsplit --bias=30 kitten run-shell direnv exec . claude --continue
 
