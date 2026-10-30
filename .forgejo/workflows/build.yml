@@ -27,10 +27,11 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Build what no cache provides
+      - name: Build hosts
         run: |
           for host in $HOSTS; do
             echo "::group::$host"
-            .forgejo/scripts/build-uncached.sh "$host"
+            nix build --print-build-logs --no-link \
+              ".#nixosConfigurations.$host.config.system.build.toplevel"
             echo "::endgroup::"
           done

@@ -1,6 +1,6 @@
 name: deploy
 
-# Builds on mouse only what no public cache provides; hosts fetch the rest from cache.nixos.org.
+# Builds main on mouse so the hosts' autoUpgrade of main finds it in Harmonia.
 # Input updates come from Renovate PRs, already checked by build.yml before they reach main.
 on:
   push:
@@ -24,16 +24,16 @@ jobs:
           ref: main
 
       # A gcroot keeps each build in mouse's store, which Harmonia serves to the hosts.
-      - name: Build what no cache provides
+      - name: Build hosts
         run: |
           mkdir -p "$GCROOT_DIR"
           for host in $HOSTS; do
             echo "::group::$host"
-            .forgejo/scripts/build-uncached.sh "$host" "$GCROOT_DIR"
+            nix build --print-build-logs \
+              --out-link "$GCROOT_DIR/$host-${{ forgejo.run_id }}" \
+              ".#nixosConfigurations.$host.config.system.build.toplevel"
             echo "::endgroup::"
           done
-        env:
-          GITHUB_RUN_ID: ${{ forgejo.run_id }}
 
       - name: Keep the last builds only
         run: |
