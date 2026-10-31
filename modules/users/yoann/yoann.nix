@@ -16,6 +16,7 @@ in {
       aspects.dev
       aspects.ai
       aspects.obsidian
+      aspects.taskwarrior
       aspects.messaging
       aspects.bitwarden
       aspects.webos
