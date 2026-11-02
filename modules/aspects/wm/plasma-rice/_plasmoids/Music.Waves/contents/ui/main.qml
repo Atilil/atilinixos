@@ -147,4 +147,3 @@ PlasmoidItem {
         id: mpris2Model
     }
 }
-

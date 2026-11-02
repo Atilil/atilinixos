@@ -10,7 +10,7 @@ _: {
         aquamarine =
           if prev.aquamarine.patches or [] == [] && lib.versionOlder prev.aquamarine.version "0.12.1"
           then
-            prev.aquamarine.overrideAttrs (old: {
+            prev.aquamarine.overrideAttrs {
               version = "0.12.1";
               src = final.fetchFromGitHub {
                 owner = "hyprwm";
@@ -18,7 +18,7 @@ _: {
                 tag = "v0.12.1";
                 hash = "sha256-cUQENbJn0PHQUttXame5+PbGGew+BckHZFTfpb8XGI8=";
               };
-            })
+            }
           else prev.aquamarine;
       })
     ];

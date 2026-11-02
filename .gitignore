@@ -18,3 +18,6 @@ result-*
 *.p12
 .env
 .env.*
+
+# direnv cache
+.direnv/

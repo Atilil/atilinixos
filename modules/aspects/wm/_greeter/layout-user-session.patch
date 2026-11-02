@@ -3,7 +3,7 @@ index e8179e4..8ad325b 100644
 --- a/src/greeter/greeter.cpp
 +++ b/src/greeter/greeter.cpp
 @@ -16,10 +16,12 @@
- 
+
  #include <algorithm>
  #include <cerrno>
 +#include <cctype>
@@ -13,7 +13,7 @@ index e8179e4..8ad325b 100644
  #include <poll.h>
 +#include <sstream>
  #include <wayland-client.h>
- 
+
  namespace {
 @@ -306,6 +308,7 @@ void Greeter::syncOutputWindows() {
      view.surface->setOnGreetdTransportError([this](const GreetdError& error) { onGreetdTransportError(error); });
@@ -26,14 +26,14 @@ index e8179e4..8ad325b 100644
 @@ -543,11 +546,40 @@ void Greeter::setupInputCallbacks(WaylandClient& client) {
      }
    });
- 
+
 +  client.setLayoutChangedCallback([this]() { refreshKeyboardLayout(); });
 +
    client.setKeyboardEventCallback([this](const KeyboardEvent& event) {
      onKeyboardEvent(event.sym, event.utf32, event.modifiers, event.pressed, event.preedit);
    });
  }
- 
+
 +void Greeter::refreshKeyboardLayout() {
 +  if (m_client == nullptr) {
 +    return;
@@ -78,7 +78,7 @@ index 635f711..c374783 100644
    void setActiveSurface(GreeterSurface* surface);
 @@ -57,6 +58,8 @@ private:
    [[nodiscard]] View* viewForSurface(wl_surface* surface) noexcept;
- 
+
    WaylandClient* m_client = nullptr;
 +  std::vector<std::string> m_layoutCodes;
 +  std::string m_layoutText;
@@ -96,7 +96,7 @@ index e1cf03f..ce5f270 100644
 -    return key == "default" || key == "last" || key == "power" || key == "actions";
 +    return key == "default" || key == "last" || key == "users" || key == "power" || key == "actions";
    }
- 
+
    [[nodiscard]] bool isKnownUserKey(std::string_view key) { return key == "default"; }
 @@ -207,6 +207,14 @@ namespace {
              config.sessionDefault = stringValue(entryNode);
@@ -139,13 +139,13 @@ index 919522d..fcfb2f7 100644
 +    std::unordered_map<std::string, std::string> sessionUsers;
      // Legacy only: migrated into sync.toml; stripped on greeter.toml write.
      std::optional<std::string> sessionLast;
- 
+
 diff --git a/src/greeter/greeter_preferences.cpp b/src/greeter/greeter_preferences.cpp
 index 6641f41..4d9f03a 100644
 --- a/src/greeter/greeter_preferences.cpp
 +++ b/src/greeter/greeter_preferences.cpp
 @@ -405,6 +405,8 @@ namespace greeter {
- 
+
      GreeterPreferences prefs;
      prefs.defaultSession = file.sessionDefault;
 +    prefs.userSessions = file.sessionUsers;
@@ -163,10 +163,10 @@ index 9b53a89..00212d5 100644
  #include <string_view>
 +#include <unordered_map>
  #include <vector>
- 
+
  namespace greeter {
 @@ -23,6 +24,9 @@ namespace greeter {
- 
+
    struct GreeterPreferences {
      std::optional<std::string> defaultSession;
 +    std::unordered_map<std::string, std::string> userSessions;
@@ -182,7 +182,7 @@ index 1e709b1..adfe8b4 100644
 @@ -508,6 +508,15 @@ void GreeterSurface::initialize(RenderContext* context) {
    m_statusLabel->setZIndex(6);
    m_root.addChild(std::move(status));
- 
+
 +  auto layoutLabel = std::make_unique<Label>();
 +  layoutLabel->setFontSize(Style::fontSizeCaption());
 +  layoutLabel->setBold(true);
@@ -196,9 +196,9 @@ index 1e709b1..adfe8b4 100644
    configErrorBanner->setHitTestVisible(false);
    configErrorBanner->setVisible(false);
 @@ -729,7 +738,23 @@ void GreeterSurface::setWindow(GreeterWindow* window) { m_window = window; }
- 
+
  void GreeterSurface::setGreetdClient(GreetdClient* client) { m_greetdClient = client; }
- 
+
 -void GreeterSurface::setUsername(const std::string& username) { m_username = username; }
 +void GreeterSurface::setUsername(const std::string& username) {
 +  m_username = username;
@@ -217,13 +217,13 @@ index 1e709b1..adfe8b4 100644
 +  m_layoutText = text;
 +  requestLayout();
 +}
- 
+
  void GreeterSurface::setOnExitRequested(std::function<void()> callback) { m_onExitRequested = std::move(callback); }
- 
+
 @@ -1319,6 +1344,19 @@ void GreeterSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
      m_backButton->setVisible(false);
    }
- 
+
 +  if (m_layoutLabel != nullptr) {
 +    const bool showLayout = showPasswordStep && !m_layoutText.empty();
 +    m_layoutLabel->setVisible(showLayout);
@@ -246,7 +246,7 @@ index 1e709b1..adfe8b4 100644
    m_allowEmptyPassword = prefs.allowEmptyPassword;
 +  m_userSessions = prefs.userSessions;
    const auto initialSession = greeter::resolveInitialSessionName(prefs);
- 
+
    if (initialSession.has_value()) {
 diff --git a/src/greeter/greeter_surface.h b/src/greeter/greeter_surface.h
 index 148b7d2..57c0177 100644
@@ -259,7 +259,7 @@ index 148b7d2..57c0177 100644
 +#include <unordered_map>
  #include <sys/types.h>
  #include <vector>
- 
+
 @@ -48,6 +49,8 @@ public:
    void setWallpaperSpanParams(const WallpaperSpanParams& params);
    void setGreetdClient(GreetdClient* client);
@@ -286,7 +286,7 @@ index 3ee1a91..045f65e 100644
 @@ -348,6 +348,10 @@ void WaylandClient::setPointerEventCallback(WaylandSeat::PointerEventCallback ca
    m_seatHandler.setPointerEventCallback(std::move(callback));
  }
- 
+
 +void WaylandClient::setLayoutChangedCallback(WaylandSeat::LayoutChangedCallback callback) {
 +  m_seatHandler.setLayoutChangedCallback(std::move(callback));
 +}
@@ -299,7 +299,7 @@ index 960760a..75c0145 100644
 --- a/src/wayland/wayland_client.h
 +++ b/src/wayland/wayland_client.h
 @@ -66,6 +66,9 @@ public:
- 
+
    void setPointerEventCallback(WaylandSeat::PointerEventCallback callback);
    void setKeyboardEventCallback(WaylandSeat::KeyboardEventCallback callback);
 +  void setLayoutChangedCallback(WaylandSeat::LayoutChangedCallback callback);
@@ -307,7 +307,7 @@ index 960760a..75c0145 100644
 +  [[nodiscard]] std::string currentLayoutName() const { return m_seatHandler.currentLayoutName(); }
    void setOutputsChangedCallback(std::function<void()> callback);
    void setPreferredOutputName(std::optional<std::string> name);
- 
+
 diff --git a/src/wayland/wayland_seat.cpp b/src/wayland/wayland_seat.cpp
 index a080924..b913f6a 100644
 --- a/src/wayland/wayland_seat.cpp
@@ -325,11 +325,11 @@ index a080924..b913f6a 100644
 +    }
    }
  }
- 
+
 @@ -768,6 +775,14 @@ void WaylandSeat::repeatTick() {
    m_repeatNextFire = now + intervalMs;
  }
- 
+
 +int WaylandSeat::currentLayoutIndex() const {
 +  if (m_xkbState == nullptr || m_xkbKeymap == nullptr) {
 +    return -1;
@@ -348,11 +348,11 @@ index 40f53b2..23f9de0 100644
 @@ -72,6 +72,7 @@ public:
      bool operator==(const LockKeysState&) const = default;
    };
- 
+
 +  using LayoutChangedCallback = std::function<void()>;
    using PointerEventCallback = std::function<void(const PointerEvent&)>;
    using KeyboardEventCallback = std::function<void(const KeyboardEvent&)>;
- 
+
 @@ -142,6 +143,9 @@ public:
    [[nodiscard]] bool hasPointerPosition() const noexcept { return m_hasPointerPosition; }
    [[nodiscard]] double lastPointerX() const noexcept { return m_lastPointerX; }
@@ -369,6 +369,6 @@ index 40f53b2..23f9de0 100644
    KeyboardEventCallback m_keyboardEventCallback;
 +  LayoutChangedCallback m_layoutChangedCallback;
 +  int m_lastLayoutIndex = -1;
- 
+
    // Key repeat
    SteadyClock::time_point m_lastUserActivitySteady{};

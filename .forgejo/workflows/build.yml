@@ -10,6 +10,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pre-commit:
+    runs-on: nixos
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+      - run: nix develop -c pre-commit run --all-files --show-diff-on-failure
+
   #INFO: Eval + build checks only (not the systems). No --no-build: it forbids IFD, and the claude-code HM module reads fetched plugin dirs at eval time
   check:
     runs-on: nixos

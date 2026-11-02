@@ -160,13 +160,13 @@ _: {
       nnoremap <leader><CR> :tabedit<space>
     '';
   in {
-    home.packages = [pkgs.vim-full pkgs.zeal];
-
-    home.file.".vimrc".source = vimrc;
-
-    # Pure-vimscript, loaded from the native pack dir: no plugin manager needed
-    home.file.".vim/pack/hm/start/vim-surround".source = pkgs.vimPlugins.vim-surround;
-
-    home.file.".cache/vim/undo/.keep".text = "";
+    home = {
+      packages = [pkgs.vim-full pkgs.zeal];
+      file = {
+        ".vimrc".source = vimrc;
+        ".vim/pack/hm/start/vim-surround".source = pkgs.vimPlugins.vim-surround;
+        ".cache/vim/undo/.keep".text = "";
+      };
+    };
   };
 }

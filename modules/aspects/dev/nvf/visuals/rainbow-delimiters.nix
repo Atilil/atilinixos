@@ -1,5 +1,5 @@
 _: {
-  den.aspects.nvf.homeManager = {...}: {
+  den.aspects.nvf.homeManager = _: {
     programs.nvf.settings.vim.visuals.rainbow-delimiters = {
       enable = true;
       setupOpts.highlight = [

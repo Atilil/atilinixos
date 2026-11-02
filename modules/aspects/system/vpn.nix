@@ -29,77 +29,78 @@
           secrets.wireguard_private_key.sopsFile = secretsFile;
         };
 
-        networking.wireguard.interfaces.wg-home = {
-          ips = ["10.86.99.7/32"];
-          mtu = 1400;
-          privateKeyFile = config.sops.secrets.wireguard_private_key.path;
-
-          peers = [
-            {
-              publicKey = "58SfszvALRXFx2tLs0hJrCar6aGkPHn9CNIshrYPE00=";
-              endpoint = "macopla.com:51820";
-              # Split tunnel: only the home/admin ranges; internet traffic stays local.
-              allowedIPs = ["10.86.0.0/16"];
-              # Keeps the NAT mapping open for inbound admin access.
-              persistentKeepalive = 25;
-              # macopla.com may change IP.
-              dynamicEndpointRefreshSeconds = 60;
-            }
-          ];
+        networking = {
+          wireguard.interfaces.wg-home = {
+            ips = ["10.86.99.7/32"];
+            mtu = 1400;
+            privateKeyFile = config.sops.secrets.wireguard_private_key.path;
+            peers = [
+              {
+                publicKey = "58SfszvALRXFx2tLs0hJrCar6aGkPHn9CNIshrYPE00=";
+                endpoint = "macopla.com:51820";
+                # Split tunnel: only the home/admin ranges; internet traffic stays local.
+                allowedIPs = ["10.86.0.0/16"];
+                # Keeps the NAT mapping open for inbound admin access.
+                persistentKeepalive = 25;
+                # macopla.com may change IP.
+                dynamicEndpointRefreshSeconds = 60;
+              }
+            ];
+            networkmanager = {
+              unmanaged = ["interface-name:wg-home"];
+              dns = lib.mkForce "none"; # resolved.nix defaults it to "systemd-resolved"
+              settings.main.systemd-resolved = false;
+            };
+          };
         };
 
-        # The forge is only reachable through the tunnel.
-        systemd.services.nixos-upgrade = {
-          after = ["wireguard-wg-home.service"];
-          wants = ["wireguard-wg-home.service"];
-        };
-
-        # NetworkManager (core aspect) must leave the tunnel alone.
-        networking.networkmanager.unmanaged = ["interface-name:wg-home"];
-
-        # DNS: home resolvers while the tunnel is healthy, public FallbackDNS otherwise. No global DNS= (resolved
-        # would stick to the last server that answered); wg-home-dns sets the home resolvers on wg-home only.
-        # TRAP: dns = "none" still pushes DHCP DNS to resolved over D-Bus, so also set systemd-resolved = false.
         services.resolved = {
           enable = true;
           settings.Resolve.FallbackDNS = ["1.1.1.1" "8.8.8.8" "2606:4700:4700::1111" "2001:4860:4860::8888"];
         };
-        networking.networkmanager.dns = lib.mkForce "none"; # resolved.nix defaults it to "systemd-resolved"
-        networking.networkmanager.settings.main.systemd-resolved = false;
 
-        # The interface stays up when the peer is unreachable, so DNS follows tunnel
-        # health (handshake < 180s): healthy -> set DNS on wg-home, unhealthy -> revert.
-        systemd.services.wg-home-dns = {
-          description = "Route DNS to the home resolvers while wg-home is healthy";
-          unitConfig.ConditionPathExists = "/sys/class/net/wg-home";
-          serviceConfig.Type = "oneshot";
-          script = let
-            resolvectl = "${config.systemd.package}/bin/resolvectl";
-            wg = "${pkgs.wireguard-tools}/bin/wg";
-          in ''
-            dev=wg-home
-            hs=$(${wg} show "$dev" latest-handshakes | ${pkgs.coreutils}/bin/cut -f2 | ${pkgs.coreutils}/bin/sort -n | ${pkgs.coreutils}/bin/tail -n1)
-            now=$(${pkgs.coreutils}/bin/date +%s)
-            healthy=0
-            if [ "''${hs:-0}" -gt 0 ] && [ $((now - hs)) -lt 180 ]; then healthy=1; fi
-            applied=0
-            if ${resolvectl} dns "$dev" | ${pkgs.gnugrep}/bin/grep -q 10.86.30.42; then applied=1; fi
+        # The forge is only reachable through the tunnel.
+        systemd = {
+          services = {
+            nixos-upgrade = {
+              after = ["wireguard-wg-home.service"];
+              wants = ["wireguard-wg-home.service"];
+            };
+            # The interface stays up when the peer is unreachable, so DNS follows tunnel
+            # health (handshake < 180s): healthy -> set DNS on wg-home, unhealthy -> revert.
+            wg-home-dns = {
+              description = "Route DNS to the home resolvers while wg-home is healthy";
+              unitConfig.ConditionPathExists = "/sys/class/net/wg-home";
+              serviceConfig.Type = "oneshot";
+              script = let
+                resolvectl = "${config.systemd.package}/bin/resolvectl";
+                wg = "${pkgs.wireguard-tools}/bin/wg";
+              in ''
+                dev=wg-home
+                hs=$(${wg} show "$dev" latest-handshakes | ${pkgs.coreutils}/bin/cut -f2 | ${pkgs.coreutils}/bin/sort -n | ${pkgs.coreutils}/bin/tail -n1)
+                now=$(${pkgs.coreutils}/bin/date +%s)
+                healthy=0
+                if [ "''${hs:-0}" -gt 0 ] && [ $((now - hs)) -lt 180 ]; then healthy=1; fi
+                applied=0
+                if ${resolvectl} dns "$dev" | ${pkgs.gnugrep}/bin/grep -q 10.86.30.42; then applied=1; fi
 
-            if [ "$healthy" = 1 ] && [ "$applied" = 0 ]; then
-              ${resolvectl} dns "$dev" 10.86.30.42 10.86.30.43
-              ${resolvectl} domain "$dev" '~.'
-              ${resolvectl} default-route "$dev" yes
-            elif [ "$healthy" = 0 ] && [ "$applied" = 1 ]; then
-              ${resolvectl} revert "$dev"
-            fi
-          '';
-        };
-        systemd.timers.wg-home-dns = {
-          wantedBy = ["timers.target"];
-          timerConfig = {
-            OnBootSec = "20s";
-            OnUnitActiveSec = "20s";
-            AccuracySec = "1s";
+                if [ "$healthy" = 1 ] && [ "$applied" = 0 ]; then
+                  ${resolvectl} dns "$dev" 10.86.30.42 10.86.30.43
+                  ${resolvectl} domain "$dev" '~.'
+                  ${resolvectl} default-route "$dev" yes
+                elif [ "$healthy" = 0 ] && [ "$applied" = 1 ]; then
+                  ${resolvectl} revert "$dev"
+                fi
+              '';
+            };
+          };
+          timers.wg-home-dns = {
+            wantedBy = ["timers.target"];
+            timerConfig = {
+              OnBootSec = "20s";
+              OnUnitActiveSec = "20s";
+              AccuracySec = "1s";
+            };
           };
         };
 

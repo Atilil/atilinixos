@@ -10,19 +10,20 @@ _: {
         wlr-layout-ui
       ];
 
-      boot.kernelModules = ["evdi"];
-      boot.extraModulePackages = [config.boot.kernelPackages.evdi];
+      boot = {
+        kernelModules = ["evdi"];
+        extraModulePackages = [config.boot.kernelPackages.evdi];
+        # Disable USB3 LPM (U1/U2) for the D6000 (17e9:6006): a failed U1 negotiation resets the whole dock
+        # (ethernet and DisplayLink). 'k' is USB_QUIRK_NO_LPM; the sysfs usb3_hardware_lpm_u1/u2 knobs are
+        # read-only, so a udev rule cannot do this: kernel cmdline only.
+        kernelParams = ["usbcore.quirks=17e9:6006:k"];
+      };
       services.xserver.videoDrivers = ["displaylink" "modesetting"];
       systemd.services.dlm.wantedBy = ["multi-user.target"];
 
       # WARNING: do NOT add `powerManagement.resumeCommands` restarting dlm.service: dlm is suspended and ignores
       # SIGTERM, so the upstream S/R handshake (which sends the resume "R") deadlocks and the DisplayLink screens
       # are lost after every resume. The upstream handshake works on its own, leave it alone.
-
-      # Disable USB3 LPM (U1/U2) for the D6000 (17e9:6006): a failed U1 negotiation resets the whole dock
-      # (ethernet and DisplayLink). 'k' is USB_QUIRK_NO_LPM; the sysfs usb3_hardware_lpm_u1/u2 knobs are
-      # read-only, so a udev rule cannot do this: kernel cmdline only.
-      boot.kernelParams = ["usbcore.quirks=17e9:6006:k"];
 
       services.udev.extraRules = ''
         SUBSYSTEM=="usb", ATTR{idVendor}=="17e9", ATTR{idProduct}=="6006", ATTR{power/control}="on"

@@ -3,10 +3,10 @@
 @@ -24,29 +24,10 @@
  User says: "pii check", "scan for pii", "check for secrets", "pre-publish audit", /pii-check.
  Also trigger when: user is about to `git push` a previously private repo, or asks "is it safe to make this public?".
- 
+
 -## Prerequisites — install git-filter-repo if needed
 +## Prerequisites — git-filter-repo (NixOS)
- 
+
 -Before running any step that rewrites history, check whether `git-filter-repo` is available:
 -
 -```bash
@@ -30,13 +30,13 @@
 -Use `python3 /tmp/git-filter-repo` for all subsequent calls — do NOT try `apt`, `pip`, or `pip3` first; they require sudo or a venv and fail silently in WSL. The curl approach is always reliable.
 +Never download or install anything. Run it ephemerally from nixpkgs: `nix run nixpkgs#git-filter-repo -- <args>`.
 +For a first publication prefer a fresh orphan branch over rewriting history.
- 
+
  > After running `git filter-repo`, it removes the `origin` remote automatically. Re-add it before pushing:
  > ```bash
 @@ -63,17 +44,7 @@
  which gitleaks && gitleaks detect --source . 2>/dev/null   # includes git history
  ```
- 
+
 -If gitleaks is not installed, tell the user:
 -> gitleaks is not installed. For full coverage, install it:
 -> - **Mac**: `brew install gitleaks`
@@ -49,6 +49,5 @@
 ->   ```
 -> Continuing with manual scan — install it before going public.
 +If gitleaks is not on PATH, run it ephemerally: `nix run nixpkgs#gitleaks -- detect --source .` (never install binaries or use sudo).
- 
+
  Parse gitleaks output; include any findings in the report. Do not stop — continue with manual checks below regardless.
- 

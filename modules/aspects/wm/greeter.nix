@@ -37,9 +37,7 @@ in {
         settings = {
           # Reuse the system XKB layout from the clavier aspect.
           keyboard = {
-            layout = xkb.layout;
-            variant = xkb.variant;
-            options = xkb.options;
+            inherit (xkb) layout variant options;
             numlock = true;
           };
         };
@@ -48,167 +46,170 @@ in {
   };
 
   # Per-host greeter parts.
-  den.aspects.laptop.includes = [
-    {
-      os = {
-        pkgs,
-        lib,
-        config,
-        ...
-      }: let
-        cfg = config.services.displayManager.noctalia-greeter;
-        # Stable, colon-free alias for the Intel iGPU (see the udev rule below).
-        igpu = "/dev/dri/igpu-card";
-      in {
-        services.displayManager.noctalia-greeter = {
-          # Let yoann push the Noctalia wallpaper/palette/font to the greeter
-          # (sync.toml) through polkit without a password prompt.
-          passwordless-sync-users = ["yoann"];
+  den.aspects = {
+    laptop.includes = [
+      {
+        os = {
+          pkgs,
+          lib,
+          config,
+          ...
+        }: let
+          cfg = config.services.displayManager.noctalia-greeter;
+          # Stable, colon-free alias for the Intel iGPU (see the udev rule below).
+          igpu = "/dev/dri/igpu-card";
+        in {
+          services.displayManager.noctalia-greeter = {
+            # Let yoann push the Noctalia wallpaper/palette/font to the greeter
+            # (sync.toml) through polkit without a password prompt.
+            passwordless-sync-users = ["yoann"];
 
-          settings = {
-            # Default to the UWSM session; name as listed by `noctalia-greeter sessions`.
-            session.default = "Hyprland (uwsm-managed)";
-            session.users = {
-              yoann = "Hyprland (uwsm-managed)";
-              audrey = "Plasma (Wayland)";
-            };
+            settings = {
+              # Default to the UWSM session; name as listed by `noctalia-greeter sessions`.
+              session.default = "Hyprland (uwsm-managed)";
+              session.users = {
+                yoann = "Hyprland (uwsm-managed)";
+                audrey = "Plasma (Wayland)";
+              };
 
-            # No "last user" memory in the greeter: open on yoann's password
-            # step; Esc returns to the user list for audrey.
-            user.default = "yoann";
+              # No "last user" memory in the greeter: open on yoann's password
+              # step; Esc returns to the user list for audrey.
+              user.default = "yoann";
 
-            # Pin the greeter to the LG at its native 21:9 mode (the dock advertises 3840x2160 first).
-            # Without DP-1 the compositor uses every output it sees: only the laptop panel, thanks to
-            # WLR_DRM_DEVICES below. Outputs lacking this mode (eDP-1) use their preferred one.
-            output = {
-              name = "DP-1";
-              width = 3840;
-              height = 1600;
-            };
+              # Pin the greeter to the LG at its native 21:9 mode (the dock advertises 3840x2160 first).
+              # Without DP-1 the compositor uses every output it sees: only the laptop panel, thanks to
+              # WLR_DRM_DEVICES below. Outputs lacking this mode (eDP-1) use their preferred one.
+              output = {
+                name = "DP-1";
+                width = 3840;
+                height = 1600;
+              };
 
-            # Same cursor as the Hyprland session (home.pointerCursor), found
-            # via the system-wide icon path rather than the user's home.
-            cursor = {
-              theme = "Nordzy-cursors";
-              size = 32;
-              path = "${pkgs.nordzy-cursor-theme}/share/icons";
+              # Same cursor as the Hyprland session (home.pointerCursor), found
+              # via the system-wide icon path rather than the user's home.
+              cursor = {
+                theme = "Nordzy-cursors";
+                size = 32;
+                path = "${pkgs.nordzy-cursor-theme}/share/icons";
+              };
             };
           };
+
+          # Restrict the greeter compositor to the Intel iGPU: the late-appearing DisplayLink evdi device
+          # causes the dlm boot race and the multi-GPU black screen (issue #59).
+          # Mirrors the module's default command, adding only the env assignment.
+          services = {
+            greetd.settings.default_session.command = "${lib.getExe' pkgs.coreutils "env"} WLR_DRM_DEVICES=${igpu} XDG_DATA_DIRS=${config.services.displayManager.sessionData.desktops}/share ${cfg.package}/bin/noctalia-greeter-session -- ${cfg.greeter-args}";
+            # wlroots splits WLR_DRM_DEVICES on ':' without escaping, so the by-path links (pci-0000:00:02.0)
+            # cannot be used: alias keyed on the i915 driver instead of the volatile cardN.
+            # mkBefore keeps this rule ahead of the other udev rules.
+            udev.extraRules = lib.mkBefore ''
+              SUBSYSTEM=="drm", KERNEL=="card[0-9]*", SUBSYSTEMS=="pci", DRIVERS=="i915", SYMLINK+="dri/igpu-card"
+            '';
+          };
+
+          # Password-only login: pam_fprintd is `sufficient` and runs before
+          # pam_gnome_keyring, so a fingerprint login leaves the keyring locked
+          # (no password to decrypt it). Fingerprint stays for sudo and lock screen.
+          security.pam.services.greetd.fprintAuth = false;
+          # Unlock KWallet at login for audrey's Plasma session (no-op under Hyprland).
+          security.pam.services.greetd.kwallet.enable = true;
         };
+      }
+    ];
 
-        # Restrict the greeter compositor to the Intel iGPU: the late-appearing DisplayLink evdi device
-        # causes the dlm boot race and the multi-GPU black screen (issue #59).
-        # Mirrors the module's default command, adding only the env assignment.
-        services.greetd.settings.default_session.command = "${lib.getExe' pkgs.coreutils "env"} WLR_DRM_DEVICES=${igpu} XDG_DATA_DIRS=${config.services.displayManager.sessionData.desktops}/share ${cfg.package}/bin/noctalia-greeter-session -- ${cfg.greeter-args}";
-
-        # wlroots splits WLR_DRM_DEVICES on ':' without escaping, so the by-path links (pci-0000:00:02.0)
-        # cannot be used: alias keyed on the i915 driver instead of the volatile cardN.
-        # mkBefore keeps this rule ahead of the other udev rules.
-        services.udev.extraRules = lib.mkBefore ''
-          SUBSYSTEM=="drm", KERNEL=="card[0-9]*", SUBSYSTEMS=="pci", DRIVERS=="i915", SYMLINK+="dri/igpu-card"
-        '';
-
-        # Password-only login: pam_fprintd is `sufficient` and runs before
-        # pam_gnome_keyring, so a fingerprint login leaves the keyring locked
-        # (no password to decrypt it). Fingerprint stays for sudo and lock screen.
-        security.pam.services.greetd.fprintAuth = false;
-        # Unlock KWallet at login for audrey's Plasma session (no-op under Hyprland).
-        security.pam.services.greetd.kwallet.enable = true;
-      };
-    }
-  ];
-
-  den.aspects.ideapad.includes = [
-    {
-      os = {
-        config,
-        pkgs,
-        lib,
-        ...
-      }: let
-        breeze = pkgs.kdePackages.breeze;
-        # Follow maria's Plasma colours: dark greeter when her scheme is Breeze Dark.
-        dark = config.home-manager.users.maria.programs.plasma.workspace.colorScheme == "BreezeDark";
-        # Breeze colour schemes (BreezeLight/BreezeDark.colors) mapped onto the greeter's palette.
-        common = {
-          primary = "#3daee9";
-          on_primary = "#ffffff";
-          tertiary = "#27ae60";
-          on_tertiary = "#ffffff";
-          error = "#da4453";
-          on_error = "#ffffff";
-          shadow = "#000000";
-          hover = "#3daee9";
-          on_hover = "#ffffff";
-        };
-        palette =
-          common
-          // (
-            if dark
-            then {
-              secondary = "#1d99f3";
-              on_secondary = "#ffffff";
-              surface = "#202326";
-              on_surface = "#fcfcfc";
-              surface_variant = "#292c30";
-              on_surface_variant = "#a1a9b1";
-              outline = "#4d4d4d";
-            }
-            else {
-              secondary = "#2980b9";
-              on_secondary = "#ffffff";
-              surface = "#eff0f1";
-              on_surface = "#232629";
-              surface_variant = "#e3e5e7";
-              on_surface_variant = "#707d8a";
-              outline = "#bdc3c7";
-            }
-          );
-      in {
-        # ideapad.patch hides the session selector, which upstream cannot do by option.
-        services.displayManager.noctalia-greeter.package = lib.mkForce (patchedGreeter pkgs [
-          ./_greeter/layout-user-session.patch
-          ./_greeter/ideapad.patch
-        ]);
-
-        # Unlock KWallet at login (plasma6 only wires `login`); needs identical passwords.
-        security.pam.services.greetd.kwallet.enable = true;
-
-        services.displayManager.noctalia-greeter.settings = {
-          # Name as listed by `noctalia-greeter sessions`.
-          session.default = "Plasma (Wayland)";
-          user.default = "maria";
-
-          appearance = {
-            scheme = "Synced"; # use the palette below
-            theme_mode =
+    ideapad.includes = [
+      {
+        os = {
+          config,
+          pkgs,
+          lib,
+          ...
+        }: let
+          breeze = pkgs.kdePackages.breeze;
+          # Follow maria's Plasma colours: dark greeter when her scheme is Breeze Dark.
+          dark = config.home-manager.users.maria.programs.plasma.workspace.colorScheme == "BreezeDark";
+          # Breeze colour schemes (BreezeLight/BreezeDark.colors) mapped onto the greeter's palette.
+          common = {
+            primary = "#3daee9";
+            on_primary = "#ffffff";
+            tertiary = "#27ae60";
+            on_tertiary = "#ffffff";
+            error = "#da4453";
+            on_error = "#ffffff";
+            shadow = "#000000";
+            hover = "#3daee9";
+            on_hover = "#ffffff";
+          };
+          palette =
+            common
+            // (
               if dark
-              then "dark"
-              else "light";
-            hide_logo = true; # no Noctalia branding for Maria
-            scheme_selector_position = "hidden"; # no scheme picker either
-            # Same family as Maria's Plasma fonts.
-            font_family = "Noto Sans";
-            inherit palette;
-            # Breeze "Next" wallpaper, light or dark variant like Plasma.
-            wallpaper = {
-              path = "${breeze}/share/wallpapers/Next/contents/${
+              then {
+                secondary = "#1d99f3";
+                on_secondary = "#ffffff";
+                surface = "#202326";
+                on_surface = "#fcfcfc";
+                surface_variant = "#292c30";
+                on_surface_variant = "#a1a9b1";
+                outline = "#4d4d4d";
+              }
+              else {
+                secondary = "#2980b9";
+                on_secondary = "#ffffff";
+                surface = "#eff0f1";
+                on_surface = "#232629";
+                surface_variant = "#e3e5e7";
+                on_surface_variant = "#707d8a";
+                outline = "#bdc3c7";
+              }
+            );
+        in {
+          # ideapad.patch hides the session selector, which upstream cannot do by option.
+          services.displayManager.noctalia-greeter.package = lib.mkForce (patchedGreeter pkgs [
+            ./_greeter/layout-user-session.patch
+            ./_greeter/ideapad.patch
+          ]);
+
+          # Unlock KWallet at login (plasma6 only wires `login`); needs identical passwords.
+          security.pam.services.greetd.kwallet.enable = true;
+
+          services.displayManager.noctalia-greeter.settings = {
+            # Name as listed by `noctalia-greeter sessions`.
+            session.default = "Plasma (Wayland)";
+            user.default = "maria";
+
+            appearance = {
+              scheme = "Synced"; # use the palette below
+              theme_mode =
                 if dark
-                then "images_dark"
-                else "images"
-              }/5120x2880.png";
-              fill_mode = "crop";
+                then "dark"
+                else "light";
+              hide_logo = true; # no Noctalia branding for Maria
+              scheme_selector_position = "hidden"; # no scheme picker either
+              # Same family as Maria's Plasma fonts.
+              font_family = "Noto Sans";
+              inherit palette;
+              # Breeze "Next" wallpaper, light or dark variant like Plasma.
+              wallpaper = {
+                path = "${breeze}/share/wallpapers/Next/contents/${
+                  if dark
+                  then "images_dark"
+                  else "images"
+                }/5120x2880.png";
+                fill_mode = "crop";
+              };
+            };
+
+            # Same Breeze cursor as her Plasma session.
+            cursor = {
+              theme = "breeze_cursors";
+              size = 24;
+              path = "${breeze}/share/icons";
             };
           };
-
-          # Same Breeze cursor as her Plasma session.
-          cursor = {
-            theme = "breeze_cursors";
-            size = 24;
-            path = "${breeze}/share/icons";
-          };
         };
-      };
-    }
-  ];
+      }
+    ];
+  };
 }
