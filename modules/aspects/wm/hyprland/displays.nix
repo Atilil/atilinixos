@@ -79,13 +79,11 @@ _: {
         if not lidClosed() then edpOn() end
       end)
 
-      -- Start with the lid already closed. The retry covers a dock whose
-      -- outputs show up after the session starts.
-      hl.on("hyprland.start", function()
-        local function check() if lidClosed() then edpOff() end end
-        check()
-        hl.timer(check, { timeout = 3000, type = "oneshot" })
-      end)
+      -- Every config load, including the auto-reload after a switch, re-applies
+      -- the static rules (eDP-1 on). The retry covers outputs that appear later.
+      local function check() if lidClosed() then edpOff() end end
+      hl.timer(check, { timeout = 500, type = "oneshot" })
+      hl.timer(check, { timeout = 3000, type = "oneshot" })
     '';
   };
 }
