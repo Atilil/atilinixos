@@ -24,6 +24,9 @@ _: {
         cat = "bat";
         # --exclude only matches the path as walked: a bare flake.nix is ignored.
         ale = "alejandra --exclude $NH_OS_FLAKE/flake.nix $NH_OS_FLAKE";
+        # Pull the CI-built main now and activate it (the timer only stages it for next boot).
+        nup = "sudo systemctl start nixos-upgrade && sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch";
+        nclean = "nh clean all --keep-one --keep=5 --optimise";
         x = "exit";
       };
       abbr = {

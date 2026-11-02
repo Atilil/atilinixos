@@ -7,7 +7,7 @@ _: {
           background_opacity = 0.62;
           color = "primary";
           font_weight = 700;
-          start = ["power_profile" "nix-monitor" "cpu" "sysmon" "network_rx" "network_tx" "temp"];
+          start = ["power_profile" "cpu" "sysmon" "network_rx" "network_tx" "temp"];
           center = ["mail" "screenshot" "workspaces" "clipboard" "notifications" "tasks"];
           end = ["pill" "bar_2" "tray" "network" "bluetooth" "volume" "brightness" "battery" "clock" "session"];
         };
@@ -16,11 +16,6 @@ _: {
       # Per-widget options; plugin widgets are instances named here and placed above
       widget = {
         # Plugin widgets
-        nix-monitor = {
-          type = "avivbintangaringga/nix-monitor:nix-monitor";
-          colorize_glyph = false;
-          show_text = false;
-        };
         tasks.type = "asj/task-warrior:bar";
         mail = {
           type = "mdj2812/thunderbird-companion:mail";
