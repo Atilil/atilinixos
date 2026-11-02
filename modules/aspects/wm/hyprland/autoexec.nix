@@ -8,7 +8,8 @@ _: {
       "hyprland.start"
       (lib.generators.mkLuaInline ''
         function()
-          hl.exec_cmd("uwsm app -- bitwarden")
+          -- --autostart is the only switch that starts Bitwarden hidden in the tray.
+          hl.exec_cmd("uwsm app -- bitwarden --autostart")
           hl.exec_cmd("uwsm app -- vesktop")
           hl.exec_cmd("uwsm app -- Telegram")
           hl.exec_cmd("uwsm app -- zapzap")
