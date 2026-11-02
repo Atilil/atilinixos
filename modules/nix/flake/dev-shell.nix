@@ -9,6 +9,7 @@ _: {
         statix
         forgejo-runner
         gitleaks
+        shellcheck
       ];
     };
   };
