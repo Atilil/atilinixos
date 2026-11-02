@@ -1,5 +1,9 @@
 _: {
-  den.aspects.hyprland.homeManager = {lib, ...}: let
+  den.aspects.hyprland.homeManager = {
+    lib,
+    config,
+    ...
+  }: let
     lua = lib.generators.mkLuaInline;
     # Smart scratchpad: (re)spawn the scratch kitty if it was closed, then toggle.
     # Rules size/center only at map time, and a `silent` window never gets focus:
@@ -18,7 +22,7 @@ _: {
               sub:remove()
             end
           end)
-          hl.dispatch(hl.dsp.exec_cmd("uwsm app -- kitty --class scratch"))
+          hl.dispatch(hl.dsp.exec_cmd("uwsm app -- kitty --class scratch --session ${config.xdg.configHome}/kitty/scratch.kitty-session"))
           hl.dispatch(toggle)
           return
         end
