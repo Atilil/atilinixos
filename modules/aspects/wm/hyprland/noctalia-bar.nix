@@ -7,8 +7,8 @@ _: {
           background_opacity = 0.62;
           color = "primary";
           font_weight = 700;
-          start = ["power_profile" "nix-monitor" "status_2" "cpu" "sysmon" "network_rx" "network_tx" "temp"];
-          center = ["mail" "screenshot" "workspaces" "clipboard" "notifications"];
+          start = ["power_profile" "nix-monitor" "cpu" "sysmon" "network_rx" "network_tx" "temp"];
+          center = ["mail" "screenshot" "workspaces" "clipboard" "notifications" "tasks"];
           end = ["pill" "bar_2" "tray" "network" "bluetooth" "volume" "brightness" "battery" "clock" "session"];
         };
       };
@@ -21,7 +21,7 @@ _: {
           colorize_glyph = false;
           show_text = false;
         };
-        status_2.type = "mindnbytes/nix-status:status";
+        tasks.type = "asj/task-warrior:bar";
         mail = {
           type = "mdj2812/thunderbird-companion:mail";
           scale = 1.3;

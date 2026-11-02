@@ -1,5 +1,5 @@
 _: {
-  den.aspects.hyprland.homeManager = {config, ...}: {
+  den.aspects.hyprland.homeManager = _: {
     programs.noctalia.settings = {
       plugins = {
         source = [
@@ -18,10 +18,10 @@ _: {
         ];
         enabled = [
           "avivbintangaringga/nix-monitor"
-          "mindnbytes/nix-status"
           "jrohland/claudecode"
           "mdj2812/thunderbird-companion"
           "gcap0n1/f1"
+          "asj/task-warrior"
         ];
       };
 
@@ -33,7 +33,6 @@ _: {
           clean_command = "nh clean all --keep-one --keep=5 --optimise";
           hide_optimize_button = true;
         };
-        "mindnbytes/nix-status".flake_dir = "${config.home.homeDirectory}/Projets/nixos";
         "jrohland/claudecode".currency = "eur";
         "noctalia/screen_recorder".video_source = "portal";
       };
