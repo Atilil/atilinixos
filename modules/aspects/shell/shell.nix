@@ -22,7 +22,8 @@ _: {
         lt = "eza -T --level=2";
         lr = "eza -la --sort=modified --time-style=relative";
         cat = "bat";
-        ale = "alejandra --exclude flake.nix $NH_OS_FLAKE";
+        # --exclude only matches the path as walked: a bare flake.nix is ignored.
+        ale = "alejandra --exclude $NH_OS_FLAKE/flake.nix $NH_OS_FLAKE";
         x = "exit";
       };
       abbr = {
