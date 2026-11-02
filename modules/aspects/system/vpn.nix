@@ -46,11 +46,14 @@
                 dynamicEndpointRefreshSeconds = 60;
               }
             ];
-            networkmanager = {
-              unmanaged = ["interface-name:wg-home"];
-              dns = lib.mkForce "none"; # resolved.nix defaults it to "systemd-resolved"
-              settings.main.systemd-resolved = false;
-            };
+          };
+
+          # Leave wg-home to wg-home-dns; no global DNS= (resolved would stick to the last server that answered).
+          # TRAP: dns = "none" still pushes DHCP DNS to resolved over D-Bus, so also set systemd-resolved = false.
+          networkmanager = {
+            unmanaged = ["interface-name:wg-home"];
+            dns = lib.mkForce "none"; # resolved.nix defaults it to "systemd-resolved"
+            settings.main.systemd-resolved = false;
           };
         };
 
