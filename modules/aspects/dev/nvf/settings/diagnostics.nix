@@ -7,7 +7,8 @@ _: {
     xdg.configFile."yamllint/config".text = ''
       extends: relaxed
       rules:
-          line-length: disable
+          line-length:
+            max: 160
     '';
 
     programs.nvf.settings.vim = {
