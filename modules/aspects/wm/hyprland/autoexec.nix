@@ -13,7 +13,9 @@ _: {
           hl.exec_cmd("uwsm app -- vesktop")
           hl.exec_cmd("uwsm app -- Telegram")
           hl.exec_cmd("uwsm app -- zapzap")
-          hl.exec_cmd("uwsm app -- thunderbird")
+          -- Thunderbird segfaults if outputs change while it starts (lid check
+          -- at 500 ms/3 s in displays.nix, late DisplayLink outputs).
+          hl.timer(function() hl.exec_cmd("uwsm app -- thunderbird") end, { timeout = 4000, type = "oneshot" })
           hl.exec_cmd("uwsm app -- kitty --class scratch --session ${config.xdg.configHome}/kitty/scratch.kitty-session")
         end
       '')
