@@ -77,7 +77,13 @@ def _process_name(tab_id: int) -> str | None:
         if g.windows
     ]
     if windows:
-        window = min(windows, key=lambda w: (w.geometry.top, w.geometry.left))
+        window = min(
+            windows,
+            key=lambda w: (
+                w.geometry.top - w.geometry.spaces.top,
+                w.geometry.left - w.geometry.spaces.left,
+            ),
+        )
     else:
         window = tab.active_window
     if window is None:
