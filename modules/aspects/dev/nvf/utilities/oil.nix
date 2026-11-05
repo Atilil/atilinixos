@@ -14,7 +14,11 @@ _: {
         enable = true;
         gitStatus.enable = true;
         setupOpts = {
-          delete_to_trash = false;
+          delete_to_trash = true;
+          # The confirmation float only shows up for deletes
+          skip_confirm_for_simple_edits = true;
+          # Default opens a vertical split, shadowing the global <C-s> = :w
+          keymaps."<C-s>" = false;
           view_options.show_hidden = true;
           watch_for_changes = true;
           columns = [
