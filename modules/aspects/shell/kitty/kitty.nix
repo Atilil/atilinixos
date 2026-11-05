@@ -21,6 +21,7 @@
           # New window, same cwd (and same host/dir if source is an SSH session)
           "f1" = "new_window_with_cwd";
           "f12" = "close_session";
+          "f9" = "goto_session -1";
           "f11" = "save_as_session --use-foreground-process --base-dir ~/.config/kitty/sessions";
           # New tab, same cwd, joins the active session if any
           "ctrl+shift+t" = "new_tab_with_cwd";
