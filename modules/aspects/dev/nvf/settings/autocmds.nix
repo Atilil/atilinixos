@@ -36,6 +36,32 @@ _: {
           ''function() vim.opt_local.shiftwidth = 2 vim.opt_local.tabstop = 2 vim.opt_local.softtabstop = 2 end'';
       }
       {
+        desc = "YAML: keep indent after a trailing backslash (shell in block scalars)";
+        event = ["FileType"];
+        pattern = ["yaml" "yaml.ansible" "yaml.docker-compose" "yaml.gitlab"];
+        callback =
+          mkLuaInline
+          ''
+            function()
+              -- GetYAMLIndent reads `" \` as an escaped multiline YAML string and
+              -- aligns on the closing quote; in a `run: |` block it is shell.
+              vim.cmd([[
+                function! YamlShellIndent(lnum) abort
+                  let p = prevnonblank(a:lnum - 1)
+                  if p > 0 && getline(p) =~# '\\\s*$'
+                    return indent(p)
+                  endif
+                  if exists('*GetYAMLIndent')
+                    return GetYAMLIndent(a:lnum)
+                  endif
+                  return indent(p)
+                endfunction
+              ]])
+              vim.opt_local.indentexpr = "YamlShellIndent(v:lnum)"
+            end
+          '';
+      }
+      {
         desc = "Nix: pair { with }; (cursor inside)";
         event = ["FileType"];
         pattern = ["nix"];
