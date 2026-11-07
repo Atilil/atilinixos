@@ -35,7 +35,6 @@
         enable = true;
         settings = {
           discordbranch = "stable";
-          transparencyOption = "mica";
           tray = true;
           minimizeToTray = true;
           autoStartMinimized = true;
@@ -58,10 +57,10 @@
           settings = {
             autoUpdate = true;
             autoUpdateNotifications = true;
-            frameless = true;
-            transparent = true;
           };
-          useSystem = true;
+          # Discord's client changes server-side without notice; a store-pinned
+          # Vencord falls behind and blanks the window (rspack switch, fixed in v1.15.15).
+          useSystem = false;
         };
       };
     };
