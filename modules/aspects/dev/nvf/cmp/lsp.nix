@@ -21,7 +21,6 @@ _: {
               "retain_line_breaks_single=true" # keep blank lines between blocks
               "indent=4" # match the global 4-space style
               "indentless_arrays=true" # `- item` without extra indent
-              "force_array_style=block" # expand inline [..] arrays to multi-line
               "force_quote_style=single" # single quotes (least escaping)
               "eof_newline=true" # always end with a newline
               "trim_trailing_whitespace=true" # drop trailing spaces
