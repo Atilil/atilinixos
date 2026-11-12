@@ -1,11 +1,6 @@
 _: {
   den.aspects.dev.homeManager = {pkgs, ...}: {
-    home.packages = with pkgs; [
-      alejandra # nix
-      shfmt # shell
-      black # python
-      taplo # toml
-      yamllint # yaml
-    ];
+    # nvf ships its own formatters; alejandra stays global for the `ale` alias run outside the repo
+    home.packages = [pkgs.alejandra];
   };
 }

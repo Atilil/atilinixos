@@ -47,11 +47,6 @@ _: {
         extraDiagnostics.enable = false;
       };
 
-      rust = {
-        enable = true;
-        extensions.crates-nvim.enable = true;
-      };
-
       terraform = {
         enable = true;
         lsp.servers = ["tofu-ls"];
@@ -81,9 +76,11 @@ _: {
       sql.enable = true;
       css.enable = true;
       html.enable = true;
-      go.enable = true;
 
       # Explicitly off: already the nvf default, kept for visibility
+      # Go/Rust: their LSPs need a toolchain, bring it with a per-project devShell
+      go.enable = false;
+      rust.enable = false;
       openscad.enable = false;
       arduino.enable = false;
       assembly.enable = false;
