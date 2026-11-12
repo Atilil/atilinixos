@@ -85,6 +85,9 @@ _: {
         servers = {
           ansiblels.cmd = ["${pkgs.ansible-language-server}/bin/ansible-language-server" "--stdio"];
           basedpyright.settings.basedpyright.analysis.typeCheckingMode = "basic";
+          # tofu-ls traces every RPC on stderr, which nvim records in lsp.log (grew past 1 GB).
+          # mkForce: cmd is a list, a plain definition would be appended to the preset's.
+          tofu-ls.cmd = lib.mkForce [(lib.getExe pkgs.tofu-ls) "serve" "-log-file=/dev/null"];
           yaml-language-server = {
             settings = {
               redhat.telemetry.enabled = false;

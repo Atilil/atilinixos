@@ -12,7 +12,11 @@
       aspects.nvf
     ];
 
-    homeManager = {config, ...}: {
+    homeManager = {
+      config,
+      pkgs,
+      ...
+    }: {
       imports = [inputs.nvf.homeManagerModules.default];
 
       programs.nvf = {
@@ -43,6 +47,9 @@
           };
 
           opts = {
+            # Devshells (mkShell/stdenv) set $SHELL to a non-interactive bash, which breaks :terminal
+            shell = "${pkgs.zsh}/bin/zsh";
+
             timeout = true;
             tm = 1000;
 

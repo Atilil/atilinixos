@@ -68,6 +68,9 @@ _: {
       " Use the terminal (Noctalia/kitty) palette instead of a vim theme, (no theme plugin)
       set notermguicolors
 
+      " Devshells (mkShell/stdenv) set $SHELL to a non-interactive bash, which breaks :terminal
+      set shell=${pkgs.zsh}/bin/zsh
+
       " Cursor shape per mode like nvf: bar in insert, underline in replace, block elsewhere (DECSCUSR)
       let &t_SI = "\e[6 q"
       let &t_SR = "\e[4 q"

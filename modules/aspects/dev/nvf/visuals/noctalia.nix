@@ -21,6 +21,9 @@ _: {
             local colors = require('base16-colorscheme').colors
             vim.api.nvim_set_hl(0, "NormalFloat", { fg = colors.base05, bg = colors.base01 })
 
+            -- base16 Visual (base02) is barely distinct from CursorLine (base01); invert like vim does
+            vim.api.nvim_set_hl(0, "Visual", { reverse = true })
+
             local base0A = colors.base0A
             vim.api.nvim_set_hl(0, "TSPunctDelimiter", { fg = base0A })
             vim.api.nvim_set_hl(0, "TSPunctSpecial", { fg = base0A })
