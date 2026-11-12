@@ -68,6 +68,13 @@ _: {
       " Use the terminal (Noctalia/kitty) palette instead of a vim theme, (no theme plugin)
       set notermguicolors
 
+      " Cursor shape per mode like nvf: bar in insert, underline in replace, block elsewhere (DECSCUSR)
+      let &t_SI = "\e[6 q"
+      let &t_SR = "\e[4 q"
+      let &t_EI = "\e[2 q"
+      " Vim doesn't send t_EI at startup; force the block on launch
+      let &t_ti .= "\e[2 q"
+
       " Same lazy external-change check as nvf (autoread alone only fires on some events)
       autocmd FocusGained,BufEnter * checktime
 
