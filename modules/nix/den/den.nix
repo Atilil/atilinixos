@@ -94,7 +94,14 @@ in {
       conf.includes = [];
 
       # Aspects common to all hosts: add here instead of repeating in each host
-      host.includes = with den.aspects; [home-manager plymouth];
+      host.includes = with den; [
+        aspects.home-manager
+        aspects.plymouth
+        # Users' system content (nixos/os, provides.to-hosts) reaches their hosts only on opt-in
+        # since https://github.com/denful/den/issues/694
+        batteries.user-aspects
+        batteries.mutual-provider
+      ];
 
       # Aspects common to all users: add here instead of repeating in each user
       user.includes = with den; [

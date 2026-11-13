@@ -24,6 +24,7 @@ _: {
               "force_quote_style=single" # single quotes (least escaping)
               "eof_newline=true" # always end with a newline
               "trim_trailing_whitespace=true" # drop trailing spaces
+              "scan_folded_as_literal=true" # don't reflow folded blocks
             ])
           ];
         };
