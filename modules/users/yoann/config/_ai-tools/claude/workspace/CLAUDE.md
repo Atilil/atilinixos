@@ -75,11 +75,13 @@ Agents in `.claude/agents/` are available across every sub-repository.
 repository's facts.**
 
 The infra agents (`opentofu`, `ansible`, `packer`, `swarm`) are deliberately
-generic: they know the tool, not this estate. Node names, IP plans, VMIDs,
-service inventory and naming conventions belong in `homelab/CLAUDE.md` — the
-agents read it. If that file is missing or stale, regenerate it from the repos
-rather than guessing. The `nixos` agent works the same way and reads
-`nixos/CLAUDE.md` for the module layout.
+generic: they know the tool, not this estate. The estate facts live in the repo
+that owns them, and agents look them up there: the repo's `README.md` and
+`docs/`, then the code itself (machines in `homelab/opentofu/proxmox/*.tfvars`,
+groups in `homelab/ansible/inventory/`, services in
+`homelab/docker/komodo/stacks.toml`). There is no central facts file. The
+`nixos` agent works the same way and reads `nixos/CLAUDE.md` for the module
+layout.
 
 The reason is drift: duplicated facts diverge, and an agent answering from a
 stale copy is worse than one that looks the fact up.
