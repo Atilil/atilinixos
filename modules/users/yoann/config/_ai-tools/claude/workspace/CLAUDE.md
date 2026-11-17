@@ -26,10 +26,13 @@ its own `CLAUDE.md` with the context specific to it.
 
 | Repo | Remote | Contents |
 |---|---|---|
-| `homelab/` | `gitlab.com:atilili/homelab` | IaC monorepo being split into one repo per tool; what remains: Docker Swarm stacks (Komodo) and the legacy `ansible/` |
-| `infra/opentofu/` | `forge.macopla.com:homelab/opentofu` | OpenTofu roots `prod/` and `ovh/` + modules; mirrors: GitLab (private), GitHub `atilili-homelab/opentofu` (public) |
-| `infra/ansible/` | `forge.macopla.com:homelab/ansible` | Ansible playbooks/roles, also the `homelab.base` collection |
-| `infra/packer/` | `forge.macopla.com:homelab/packer` | Packer Debian 13 templates — first repo split out of the monorepo; mirrors: GitLab (private backup), GitHub `atilili-homelab/packer` (public) |
+| `homelab/packer/` | `forge.macopla.com:homelab/packer` | Packer Debian 13 templates for Proxmox VE |
+| `homelab/opentofu/` | `forge.macopla.com:homelab/opentofu` | OpenTofu roots `proxmox/`, `openbao/`, `ovh/`, `lldap/` + modules |
+| `homelab/ansible/` | `forge.macopla.com:homelab/ansible` | Ansible playbooks/roles, also the `homelab.base` collection |
+| `homelab/docker/` | `forge.macopla.com:homelab/docker` | Docker Swarm and compose stacks, deployed by Komodo (GitOps) |
+| `homelab/renovate-config/` | `forge.macopla.com:homelab/renovate-config` | Shared Renovate preset |
+| `homelab/template/` | `forge.macopla.com:homelab/template` | Repository skeleton: Nix dev shell, pre-commit, CI |
+| `homelab/.github/` | `github.com:atilili-homelab/.github` | GitHub organisation profile README |
 | `nixos/` | `gitlab.com:atilili/nixos` | Laptop config: NixOS, Hyprland, home-manager |
 | `notes/` | `gitlab.com:atilili/notes` | Obsidian vault (working notes) |
 | `wiki/` | `gitlab.com:atilili/wiki` | BookStack documentation export |
@@ -37,6 +40,12 @@ its own `CLAUDE.md` with the context specific to it.
 | `corne/` | local | Corne keyboard QMK firmware + userspace |
 | `jellyfin-plugins/` | `github.com:Atilil/jellyfin-plugins` | Jellyfin plugin fork |
 | `learning/` | local | Course material and exercises |
+
+`homelab/` is a plain directory, not a repo: it groups the infrastructure repos,
+which form one chain (Packer → OpenTofu → Ansible → Docker). The Forgejo repos are
+push-mirrored to GitHub `atilili-homelab/<repo>` (public showcase for recruiters,
+not meant for reuse), and some to GitLab as a private backup. The former
+`gitlab.com:atilili/homelab` monorepo is retired.
 
 **Operational documentation** — incident runbooks, project kanban,
 troubleshooting notes — lives in `notes/` (Obsidian vault). Query it through
@@ -68,7 +77,8 @@ repository's facts.**
 The infra agents (`opentofu`, `ansible`, `packer`, `swarm`) are deliberately
 generic: they know the tool, not this estate. Node names, IP plans, VMIDs,
 service inventory and naming conventions belong in `homelab/CLAUDE.md` — the
-agents read it. The `nixos` agent works the same way and reads
+agents read it. If that file is missing or stale, regenerate it from the repos
+rather than guessing. The `nixos` agent works the same way and reads
 `nixos/CLAUDE.md` for the module layout.
 
 The reason is drift: duplicated facts diverge, and an agent answering from a
@@ -84,10 +94,10 @@ a task an agent covers.
 
 | Directory / domain | Agent |
 |---|---|
-| `infra/opentofu/` | **opentofu** |
-| `infra/ansible/` | **ansible** |
-| `homelab/stacks/` | **swarm** |
-| `infra/packer/` | **packer** |
+| `homelab/opentofu/` | **opentofu** |
+| `homelab/ansible/` | **ansible** |
+| `homelab/docker/` | **swarm** |
+| `homelab/packer/` | **packer** |
 | `nixos/` | **nixos** |
 | Multi-file / multi-tool IaC audit | **infra-reviewer** |
 | `notes/` — Obsidian vault | **obsidian** |
@@ -99,4 +109,4 @@ An open question needing several sources reconciled → research.
 
 ---
 
-**Last updated:** 2026-08-07
+**Last updated:** 2026-11-17
