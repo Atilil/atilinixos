@@ -23,15 +23,15 @@
   };
 in {
   accounts.email.accounts = {
-    "yoann" = mkMailcow {
-      realName = config.userInfo.realName;
-      address = config.userInfo.emails.primary;
-      primary = true;
-    };
-    "admin" = mkMailcow {
-      realName = "Admin Macopla";
-      address = config.userInfo.emails.admin;
-    };
+    "yoann" =
+      mkMailcow {
+        realName = config.userInfo.realName;
+        address = config.userInfo.emails.primary;
+        primary = true;
+      }
+      // {
+        aliases = [config.userInfo.emails.admin];
+      };
     "fenrisfr" = {
       enable = true;
       thunderbird.enable = true;
