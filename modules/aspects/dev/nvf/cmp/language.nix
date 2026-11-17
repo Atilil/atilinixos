@@ -70,7 +70,10 @@ _: {
       docker.enable = true;
       hcl.enable = true;
       helm.enable = true;
-      json.enable = true;
+      json = {
+        enable = true;
+        format.type = ["prettier"];
+      };
       toml.enable = true;
       lua.enable = true;
       sql.enable = true;
