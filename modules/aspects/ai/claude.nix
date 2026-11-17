@@ -147,7 +147,11 @@ _: {
         language = "French";
         effortLevel = "high";
         awaySummaryEnabled = false;
-        includeCoAuthoredBy = false;
+        attribution = {
+          commit = "";
+          pr = "";
+          sessionUrl = false;
+        };
         theme = "dark";
         editorMode = "vim";
         outputStyle = "Explanatory";

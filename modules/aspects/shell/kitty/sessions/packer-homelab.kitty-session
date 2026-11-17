@@ -1,7 +1,7 @@
 new_tab [Packer-Homelab]
 layout splits
 enabled_layouts splits,stack
-cd /home/yoann/Projets/infra/packer
+cd /home/yoann/Projets/homelab/packer
 
 launch --var=IS_NVIM=1 --title=packer-homelab-nvim kitten run-shell direnv exec . nvim
 
@@ -15,12 +15,12 @@ focus_matching_window title:packer-homelab-nvim
 
 # Git tab (not focused: the first tab stays active)
 new_tab [Lazygit]
-cd /home/yoann/Projets/infra/packer
+cd /home/yoann/Projets/homelab/packer
 
 launch --title=packer-homelab-lazygit kitten run-shell direnv exec . lazygit
 
 # File manager tab (not focused)
 new_tab [Yazi]
-cd /home/yoann/Projets/infra/packer
+cd /home/yoann/Projets/homelab/packer
 
 launch --title=packer-homelab-yazi kitten run-shell direnv exec . yazi

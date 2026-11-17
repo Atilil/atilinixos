@@ -1,7 +1,7 @@
 new_tab [Template-Homelab]
 layout splits
 enabled_layouts splits,stack
-cd /home/yoann/Projets/infra/template
+cd /home/yoann/Projets/homelab/template
 
 launch --var=IS_NVIM=1 --title=template-homelab-nvim kitten run-shell direnv exec . nvim
 
@@ -15,12 +15,12 @@ focus_matching_window title:template-homelab-nvim
 
 # Git tab (not focused: the first tab stays active)
 new_tab [Lazygit]
-cd /home/yoann/Projets/infra/template
+cd /home/yoann/Projets/homelab/template
 
 launch --title=template-homelab-lazygit kitten run-shell direnv exec . lazygit
 
 # File manager tab (not focused)
 new_tab [Yazi]
-cd /home/yoann/Projets/infra/template
+cd /home/yoann/Projets/homelab/template
 
 launch --title=template-homelab-yazi kitten run-shell direnv exec . yazi
