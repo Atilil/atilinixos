@@ -7,7 +7,6 @@ _: {
     }: {
       environment.systemPackages = with pkgs; [
         displaylink
-        wlr-layout-ui
       ];
 
       boot = {
