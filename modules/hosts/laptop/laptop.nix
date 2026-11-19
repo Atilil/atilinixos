@@ -58,6 +58,9 @@
         kwin-x11
       ];
 
+      # Whole cifs credentials file (username=/password= lines) as one multiline value.
+      sops.secrets.nas_ext_smb_credentials = {};
+
       users.mutableUsers = false;
       users.users.root.hashedPasswordFile = config.sops.secrets.root_password.path;
     };

@@ -1,37 +1,63 @@
-{lib, ...}: let
+{
+  config,
+  lib,
+  utils,
+  ...
+}: let
   # Media shares maintained from the laptop (rename, cleanup). The Jellyfin
   # server mounts the same exports read-only because it is internet-exposed;
   # write access is only granted here, on the admin machine.
-  nasShares = {
+  nfsShares = {
     "/mnt/jellyfin" = "10.86.30.100:/mnt/tank/jellyfin";
-    "/mnt/NAS-EXT/16T" = "192.168.70.200:/volume3/16T";
-    "/mnt/NAS-EXT/4K" = "192.168.70.200:/volume2/4K";
-    "/mnt/NAS-EXT/DX1" = "192.168.70.200:/volume4/DX-1";
-    "/mnt/NAS-EXT/DX2" = "192.168.70.200:/volume5/DX-2";
-    "/mnt/NAS-EXT/DX4" = "192.168.70.200:/volume7/DX-4";
     "/mnt/NAS-EXT/ATN" = "192.168.1.192:/volume1/Plex";
     "/mnt/NAS-EXT/NAS3" = "192.168.30.68:/volume1/video";
     "/mnt/NAS-EXT/DS918D" = "192.168.30.20:/volume1/video";
     "/mnt/NAS-EXT/NAS1" = "192.168.30.239:/volume3/GuiTemp";
   };
 
+  # DSM enforces ACLs per DSM account, which NFS (uid-based) cannot satisfy,
+  # so this Synology is mounted over SMB with a dedicated account.
+  smbShares = {
+    "/mnt/NAS-EXT/16T" = "//192.168.70.200/16T";
+    "/mnt/NAS-EXT/4K" = "//192.168.70.200/4K";
+    "/mnt/NAS-EXT/DX1" = "//192.168.70.200/DX-1";
+    "/mnt/NAS-EXT/DX2" = "//192.168.70.200/DX-2";
+    "/mnt/NAS-EXT/DX4" = "//192.168.70.200/DX-4";
+  };
+
   # The laptop is often off the LAN/VPN: nothing may block boot, suspend or
   # the desktop. Automount mounts lazily on first access and unmounts when
   # idle; softerr + short timeo/retrans make an unreachable NAS return an
   # error (ETIMEDOUT) instead of hanging processes forever.
-  nasMountOptions = [
+  commonOptions = [
     "rw"
     "noatime"
     "noauto"
     "nofail"
     "_netdev"
-    "softerr"
-    "timeo=50"
-    "retrans=2"
     "x-systemd.automount"
     "x-systemd.idle-timeout=600"
     "x-systemd.mount-timeout=15"
   ];
+  nfsOptions =
+    commonOptions
+    ++ [
+      "softerr"
+      "timeo=50"
+      "retrans=2"
+    ];
+  # uid/gid by name: the user's uid is auto-allocated, not pinned in the config.
+  smbOptions =
+    commonOptions
+    ++ [
+      "credentials=${config.sops.secrets.nas_ext_smb_credentials.path}"
+      "uid=yoann"
+      "gid=users"
+      "file_mode=0664"
+      "dir_mode=0775"
+      "soft"
+      "echo_interval=10"
+    ];
 in {
   fileSystems =
     {
@@ -48,12 +74,33 @@ in {
     // lib.mapAttrs (_: device: {
       inherit device;
       fsType = "nfs4";
-      options = nasMountOptions;
+      options = nfsOptions;
     })
-    nasShares;
+    nfsShares
+    // lib.mapAttrs (_: device: {
+      inherit device;
+      fsType = "cifs";
+      options = smbOptions;
+    })
+    smbShares;
 
-  # NFS client userland (mount.nfs, idmapd, rpcbind) for the mounts above.
-  boot.supportedFilesystems = ["nfs"];
+  # Client userland: mount.nfs, idmapd, rpcbind and mount.cifs (cifs-utils).
+  boot.supportedFilesystems = ["nfs" "cifs"];
+
+  # Failed automounts (NAS unreachable) would hit the default start limit and
+  # stay dead until `systemctl reset-failed`. Drop-ins also apply to the
+  # fstab-generated units, which cannot be overridden through systemd.mounts.
+  environment.etc =
+    lib.mapAttrs' (
+      mountpoint: _:
+        lib.nameValuePair "systemd/system/${utils.escapeSystemdPath mountpoint}.mount.d/10-start-limit.conf" {
+          text = ''
+            [Unit]
+            StartLimitIntervalSec=0
+          '';
+        }
+    )
+    (nfsShares // smbShares);
 
   swapDevices = [
     {
