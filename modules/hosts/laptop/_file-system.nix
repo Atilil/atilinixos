@@ -9,20 +9,20 @@
   # write access is only granted here, on the admin machine.
   nfsShares = {
     "/mnt/jellyfin" = "10.86.30.100:/mnt/tank/jellyfin";
-    "/mnt/NAS-EXT/ATN" = "192.168.1.192:/volume1/Plex";
-    "/mnt/NAS-EXT/NAS3" = "192.168.30.68:/volume1/video";
-    "/mnt/NAS-EXT/DS918D" = "192.168.30.20:/volume1/video";
-    "/mnt/NAS-EXT/NAS1" = "192.168.30.239:/volume3/GuiTemp";
   };
 
   # DSM enforces ACLs per DSM account, which NFS (uid-based) cannot satisfy,
-  # so this Synology is mounted over SMB with a dedicated account.
+  # so the Synology NAS are mounted over SMB with a dedicated account.
   smbShares = {
     "/mnt/NAS-EXT/16T" = "//192.168.70.200/16T";
     "/mnt/NAS-EXT/4K" = "//192.168.70.200/4K";
     "/mnt/NAS-EXT/DX1" = "//192.168.70.200/DX-1";
     "/mnt/NAS-EXT/DX2" = "//192.168.70.200/DX-2";
     "/mnt/NAS-EXT/DX4" = "//192.168.70.200/DX-4";
+    "/mnt/NAS-EXT/ATN" = "//192.168.1.192/Plex";
+    "/mnt/NAS-EXT/NAS3" = "//192.168.30.68/video";
+    "/mnt/NAS-EXT/DS918D" = "//192.168.30.20/video";
+    "/mnt/NAS-EXT/NAS1" = "//192.168.30.239/GuiTemp";
   };
 
   # The laptop is often off the LAN/VPN: nothing may block boot, suspend or
