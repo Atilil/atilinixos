@@ -88,12 +88,13 @@ in {
   boot.supportedFilesystems = ["nfs" "cifs"];
 
   # Failed automounts (NAS unreachable) would hit the default start limit and
-  # stay dead until `systemctl reset-failed`. Drop-ins also apply to the
-  # fstab-generated units, which cannot be overridden through systemd.mounts.
-  environment.etc =
+  # stay dead until `systemctl reset-failed`. asDropin leaves the
+  # fstab-generated unit in place instead of shadowing it with a full unit.
+  systemd.units =
     lib.mapAttrs' (
       mountpoint: _:
-        lib.nameValuePair "systemd/system/${utils.escapeSystemdPath mountpoint}.mount.d/10-start-limit.conf" {
+        lib.nameValuePair "${utils.escapeSystemdPath mountpoint}.mount" {
+          overrideStrategy = "asDropin";
           text = ''
             [Unit]
             StartLimitIntervalSec=0
