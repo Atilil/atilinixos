@@ -38,7 +38,7 @@ its own `CLAUDE.md` with the context specific to it.
 | `wiki/` | `gitlab.com:atilili/wiki` | BookStack documentation export |
 | `quickdata/` | local | NocoDB infrastructure project |
 | `corne/` | local | Corne keyboard QMK firmware + userspace |
-| `jellyfin-plugins/` | `github.com:Atilil/jellyfin-plugins` | Jellyfin plugin fork |
+| `jellyfin-plugins/` | `github.com:Atilil/jellyfin-plugins` | User's own Jellyfin plugins (WatchSync, JellyTag) |
 | `learning/` | local | Course material and exercises |
 
 `homelab/` is a plain directory, not a repo: it groups the infrastructure repos,
