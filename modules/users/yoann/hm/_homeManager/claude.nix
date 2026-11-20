@@ -17,6 +17,17 @@
     export GITHUB_PERSONAL_ACCESS_TOKEN="$(cat /run/secrets/github_token_yoann)"
     exec ${pkgs.github-mcp-server}/bin/github-mcp-server stdio
   '';
+  # Read-only token for claude-code
+  claudeWithGhToken = pkgs.symlinkJoin {
+    name = "claude-code-gh-token";
+    paths = [pkgs.unstable.claude-code];
+    nativeBuildInputs = [pkgs.makeWrapper];
+    postBuild = ''
+      wrapProgram $out/bin/claude \
+        --run '[ -r /run/secrets/github_token_yoann ] && export GH_TOKEN="$(cat /run/secrets/github_token_yoann)"'
+    '';
+    inherit (pkgs.unstable.claude-code) meta;
+  };
   plugins = pkgs.fetchFromGitHub {
     owner = "anthropics";
     repo = "claude-plugins-official";
@@ -36,6 +47,7 @@ in {
     "Projets/CLAUDE.md".source = link "workspace/CLAUDE.md";
   };
   programs.claude-code = {
+    package = claudeWithGhToken;
     agentsDir = "${claudeFilesStore}/agents";
     hooksDir = "${claudeFilesStore}/hooks";
     mcpServers.github.command = "${githubMcpWrapper}";

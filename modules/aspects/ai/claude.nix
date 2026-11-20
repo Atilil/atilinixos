@@ -1,5 +1,9 @@
 _: {
-  den.aspects.ai.homeManager = {pkgs, ...}: let
+  den.aspects.ai.homeManager = {
+    pkgs,
+    lib,
+    ...
+  }: let
     # claude-hud statusline, rebuilt from src at a reviewed commit (SkillSpector + manual review).
     claude-hud = pkgs.buildNpmPackage {
       pname = "claude-hud";
@@ -74,7 +78,7 @@ _: {
 
     programs.claude-code = {
       enable = true;
-      package = pkgs.unstable.claude-code;
+      package = lib.mkDefault pkgs.unstable.claude-code;
       enableMcpIntegration = true;
       commands = {};
       # User-invoked (grill-me, handoff, retro) plus the skills they call.

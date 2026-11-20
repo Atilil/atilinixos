@@ -2,6 +2,7 @@ _: {
   den.aspects.dev = {
     homeManager = {
       config,
+      lib,
       pkgs,
       ...
     }: let
@@ -52,6 +53,19 @@ _: {
           enable = true;
           enableGitIntegration = true;
         };
+
+        gh = {
+          enable = true;
+          settings = {
+            git_protocol = "ssh";
+            pager = lib.getExe config.programs.delta.package;
+          };
+        };
+
+        gh-dash = {
+          enable = true;
+        };
+
         git = {
           enable = true;
           signing = {
@@ -83,7 +97,6 @@ _: {
           # Opt out per repo with `git config hooks.skipGlobal true`.
           hooks.pre-commit = pkgs.writeShellScript "pre-commit" ''
             set -uo pipefail
-
             global_checks() {
               local fail=0
               local max_size=5242880 # 5 MiB
