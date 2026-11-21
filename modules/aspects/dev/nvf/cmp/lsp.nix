@@ -101,6 +101,8 @@ _: {
                   "**/manifests/**/*.{yml,yaml}"
                 ];
                 "https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json" = [".gitlab-ci.yml"];
+                # SchemaStore only maps .github/workflows; Forgejo Actions reuses the GitHub syntax
+                "https://json.schemastore.org/github-workflow.json" = ["**/.forgejo/workflows/*.{yml,yaml}"];
               };
             };
           };

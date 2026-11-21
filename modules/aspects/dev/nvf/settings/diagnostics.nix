@@ -3,7 +3,25 @@ _: {
     lib,
     pkgs,
     ...
-  }: {
+  }: let
+    # Workflows keep the plain yaml filetype: skip actionlint on every other YAML file
+    actionlintWorkflows = pkgs.writeShellApplication {
+      name = "actionlint-workflows";
+      runtimeInputs = [pkgs.actionlint];
+      text = ''
+        file=""
+        prev=""
+        for arg in "$@"; do
+          [ "$prev" = "-stdin-filename" ] && file="$arg"
+          prev="$arg"
+        done
+        case "$file" in
+          */.github/workflows/* | */.forgejo/workflows/*) exec actionlint "$@" ;;
+          *) cat >/dev/null ;;
+        esac
+      '';
+    };
+  in {
     xdg.configFile."yamllint/config".text = ''
       extends: relaxed
       rules:
@@ -16,11 +34,14 @@ _: {
         enable = true;
         nvim-lint = {
           enable = true;
-          linters.tflint.cmd = "${pkgs.tflint}/bin/tflint";
-          linters.yamllint.cmd = "${pkgs.yamllint}/bin/yamllint";
+          linters = {
+            tflint.cmd = "${pkgs.tflint}/bin/tflint";
+            yamllint.cmd = "${pkgs.yamllint}/bin/yamllint";
+            actionlint.cmd = lib.getExe actionlintWorkflows;
+          };
           linters_by_ft = {
             terraform = ["tflint"];
-            yaml = ["yamllint"];
+            yaml = ["yamllint" "actionlint"];
             "yaml.gitlab" = ["yamllint"];
             dockercompose = ["yamllint"];
           };

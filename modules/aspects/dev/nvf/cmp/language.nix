@@ -76,6 +76,7 @@ _: {
       };
       toml.enable = true;
       lua.enable = true;
+      just.enable = true;
       sql.enable = true;
       css.enable = true;
       html.enable = true;
@@ -102,7 +103,6 @@ _: {
       haskell.enable = false;
       ruby.enable = false;
       fsharp.enable = false;
-      just.enable = false;
       make.enable = false;
       qml.enable = false;
       svelte.enable = false;

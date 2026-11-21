@@ -1,0 +1,22 @@
+new_tab [Jellyfin-Plugins]
+layout splits
+enabled_layouts splits,stack
+cd /home/yoann/Projets/jellyfin
+
+launch --var=IS_NVIM=1 --title=jellyfin-nvim kitten run-shell direnv exec . nvim
+
+launch --location=vsplit --bias=30 kitten run-shell direnv exec . claude --continue
+
+focus_matching_window title:jellyfin-nvim
+
+# Git tab (not focused: the first tab stays active)
+new_tab [Lazygit]
+cd /home/yoann/Projets/jellyfin
+
+launch --title=jellyfin-lazygit kitten run-shell direnv exec . lazygit
+
+# File manager tab (not focused)
+new_tab [Yazi]
+cd /home/yoann/Projets/jellyfin
+
+launch --title=jellyfin-yazi kitten run-shell direnv exec . yazi
