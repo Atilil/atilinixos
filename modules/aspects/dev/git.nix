@@ -60,10 +60,46 @@ _: {
             git_protocol = "ssh";
             pager = lib.getExe config.programs.delta.package;
           };
+          extensions = [pkgs.gh-enhance];
         };
 
         gh-dash = {
           enable = true;
+          settings = {
+            # user:Atilil bounds the search when launched outside a clone;
+            # inside one, smartFilteringAtLaunch narrows it to that repo.
+            prSections = [
+              {
+                title = "Open";
+                filters = "is:open user:Atilil";
+              }
+              {
+                title = "Needs my review";
+                filters = "is:open review-requested:@me";
+              }
+              {
+                title = "Mine";
+                filters = "is:open author:@me";
+              }
+            ];
+            issuesSections = [
+              {
+                title = "Open";
+                filters = "is:open user:Atilil";
+              }
+              {
+                title = "Assigned";
+                filters = "is:open assignee:@me";
+              }
+            ];
+            keybindings.prs = [
+              {
+                key = "T";
+                name = "actions (enhance)";
+                command = "gh enhance -R {{.RepoName}} {{.PrNumber}}";
+              }
+            ];
+          };
         };
 
         git = {
