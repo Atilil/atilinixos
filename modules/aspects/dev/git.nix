@@ -59,6 +59,9 @@ _: {
           settings = {
             git_protocol = "ssh";
             pager = lib.getExe config.programs.delta.package;
+            editor = "vim";
+            telemetry = "disabled";
+            color_labels = "enabled";
           };
           extensions = [pkgs.gh-enhance];
         };
