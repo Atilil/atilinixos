@@ -1,51 +1,15 @@
 _: {
   den.aspects.kitty.homeManager = {pkgs, ...}: let
-    # fzf picker to open/create sessions from zoxide dirs, SSH hosts (~/.ssh/config) and saved .kitty-session files;
+    # fzf picker to open saved .kitty-session files and SSH hosts (~/.ssh/config) as sessions;
     # replaces the native goto_session-on-directory picker.
     # Adapted from https://github.com/linkarzu/dotfiles-latest/blob/main/kitty/scripts/kitty-zoxide-session.sh
     kittySessionPicker = pkgs.writeShellApplication {
       name = "kitty-session-picker";
-      runtimeInputs = [pkgs.fzf pkgs.jq pkgs.zoxide];
+      runtimeInputs = [pkgs.fzf];
       text = ''
         set -euo pipefail
 
-        session_dir="/tmp/kitty-zoxide-sessions"
-
-        hash_path() {
-          printf "%s" "$1" | sha256sum | awk '{print $1}'
-        }
-
-        session_exists() {
-          local name="$1"
-          kitty @ ls 2>/dev/null | jq -e --arg name "$name" '
-            any(.[]?.tabs[]?.windows[]?; .session_name == $name)
-          ' >/dev/null
-        }
-
-        bump_zoxide_score() {
-          zoxide add -- "$1" >/dev/null 2>&1 || true
-        }
-
-        find_session_by_path() {
-          local target="$1" name pwd real
-          while IFS=$'\t' read -r name pwd; do
-            [[ -z "$name" || -z "$pwd" ]] && continue
-            [[ ! -d "$pwd" ]] && continue
-            real="$(realpath "$pwd")"
-            if [[ "$real" == "$target" ]]; then
-              printf "%s" "$name"
-              return 0
-            fi
-          done < <(
-            kitty @ ls 2>/dev/null | jq -r '
-              .[]?.tabs[]?.windows[]?
-              | select(.session_name != null and .session_name != "")
-              | [(.session_name|tostring), (.env.PWD // .cwd // "")]
-              | @tsv
-            '
-          )
-          return 1
-        }
+        session_dir="/tmp/kitty-picker-sessions"
 
         collect_ssh_config_files() {
           local root_config="$HOME/.ssh/config"
@@ -119,45 +83,6 @@ _: {
         print_menu_lines() {
           print_saved_session_lines
           print_ssh_menu_lines
-          zoxide query -l 2>/dev/null | while IFS= read -r path; do
-            base="$(basename "$path")"
-            printf "%s\t%s  %s\n" "$path" "$base" "$path"
-          done
-        }
-
-        focus_or_launch_dir() {
-          local selected_path="$1" selected_real base safe_base hash short_name session_name existing_session session_file
-          if [[ ! -d "$selected_path" ]]; then
-            echo "Directory not found: $selected_path"
-            exit 1
-          fi
-          selected_real="$(realpath "$selected_path")"
-          existing_session="$(find_session_by_path "$selected_real" || true)"
-          if [[ -n "$existing_session" ]]; then
-            bump_zoxide_score "$selected_real"
-            kitty @ action goto_session "$existing_session"
-            return 0
-          fi
-          base="$(basename "$selected_path")"
-          safe_base="$(printf "%s" "$base" | tr -cs 'A-Za-z0-9._-' '_')"
-          hash="$(hash_path "$selected_real")"
-          hash="''${hash:0:4}"
-          short_name="z-''${safe_base}"
-          session_name="$short_name"
-          if session_exists "$short_name"; then
-            session_name="''${short_name}-''${hash}"
-          fi
-          mkdir -p "$session_dir"
-          session_file="''${session_dir}/''${session_name}.kitty-session"
-          cat >"$session_file" <<EOF
-        layout tall
-        cd ''${selected_real}
-        launch --title "''${base}"
-        focus
-        focus_os_window
-        EOF
-          kitty @ action goto_session "$session_file"
-          bump_zoxide_score "$selected_real"
         }
 
         focus_or_launch_ssh() {
@@ -176,7 +101,7 @@ _: {
 
         menu_lines="$(print_menu_lines)"
         if [[ -z "''${menu_lines:-}" ]]; then
-          echo "Nothing to show (no zoxide entries, saved sessions, or SSH hosts)."
+          echo "Nothing to show (no saved sessions or SSH hosts)."
           exit 1
         fi
 
@@ -185,7 +110,7 @@ _: {
           printf "%s\n" "$menu_lines" |
             fzf --exact --ansi --height=100% --reverse \
               --header="Type to filter, enter open, esc quit" \
-              --prompt="Kitty sessions (zoxide/saved/ssh) > " \
+              --prompt="Kitty sessions (saved/ssh) > " \
               --no-multi \
               --with-nth=2.. \
               --expect=enter,esc \
@@ -214,7 +139,6 @@ _: {
         case "$selected" in
           ssh:*) focus_or_launch_ssh "''${selected#ssh:}" ;;
           sess:*) kitty @ action goto_session "''${selected#sess:}" ;;
-          *) focus_or_launch_dir "$selected" ;;
         esac
       '';
     };
