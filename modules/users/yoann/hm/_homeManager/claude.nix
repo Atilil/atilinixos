@@ -24,7 +24,7 @@
     nativeBuildInputs = [pkgs.makeWrapper];
     postBuild = ''
       wrapProgram $out/bin/claude \
-        --run '[ -r /run/secrets/github_token_yoann ] && export GH_TOKEN="$(cat /run/secrets/github_token_yoann)"'
+        --run 'if [ -r /run/secrets/github_classic_token_yoann ]; then export GH_TOKEN="$(cat /run/secrets/github_classic_token_yoann)"; else export GH_TOKEN=secret-missing; fi'
     '';
     inherit (pkgs.unstable.claude-code) meta;
   };

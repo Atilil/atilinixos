@@ -101,6 +101,7 @@ in {
       # User secrets (API tokens); yoann_password lives in sops.nix (neededForUsers)
       sops.secrets = {
         github_token_yoann = mkUserSecret "github_token_yoann";
+        github_classic_token_yoann = mkUserSecret "github_classic_token_yoann";
         codestral_api_key_yoann = mkUserSecret "codestral_api_key_yoann";
       };
     };
