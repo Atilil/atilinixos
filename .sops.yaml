@@ -17,9 +17,10 @@
 # ────────────────────────────────────────────────────────────
 keys:
   - &yoann age1n70vtuvlqdlacqa2x93h7kpee2wv8cx9ceqjr75pur4mmv7mg40syvs9w0
+  - &audrey age1r32slraxueqkqtmy6agl3uy2rcsr2vm08rulnzg7wyyx652v0fdssm2n4m
+  - &bigtop age1l93hkrpgmxys0t9t8gdt00rx0spca4relfxvjst707m8dur05y7q4ez022
   - &laptop age1ep0kwphknp4x49g8g7vm4yqkyw67ynz36z29rq38erkhp93qz3tqg0dz5m
   - &ideapad age1h2x3cy202kgpqdn4sqy60ad29rmkl7jhxrjcgymmn90qgm47ypgsta3fhl
-  - &audrey age1r32slraxueqkqtmy6agl3uy2rcsr2vm08rulnzg7wyyx652v0fdssm2n4m
 
 creation_rules:
   - path_regex: modules/nix/sops/.*\.yaml$
@@ -27,12 +28,14 @@ creation_rules:
       - age:
           - *yoann
           - *laptop
+          - *bigtop
 
   - path_regex: modules/users/yoann/sops/.*\.yaml$
     key_groups:
       - age:
           - *yoann
           - *laptop
+          - *bigtop
 
   - path_regex: modules/users/audrey/sops/.*\.yaml$
     key_groups:

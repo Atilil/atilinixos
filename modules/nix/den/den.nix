@@ -9,6 +9,7 @@
     x86_64-linux = {
       laptop = ["yoann" "audrey"];
       ideapad = ["maria"];
+      bigtop = ["yoann"];
     };
   };
 

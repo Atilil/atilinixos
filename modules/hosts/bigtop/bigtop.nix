@@ -24,16 +24,25 @@
         ./_file-system.nix
       ];
 
-      boot.loader = {
-        systemd-boot = {
-          enable = true;
-          editor = false;
-          memtest86.enable = true;
-          configurationLimit = 5;
-        };
-        efi = {
-          canTouchEfiVariables = true;
-          efiSysMountPoint = "/boot";
+      boot = {
+        loader = {
+          systemd-boot = {
+            enable = true;
+            editor = false;
+            memtest86.enable = true;
+            configurationLimit = 5;
+            extraEntries."windows.conf" = ''
+              title Windows
+              windows /EFI/Microsoft/Boot/bootmgfw.efi
+            '';
+            extraInstallCommands = ''
+              echo "default windows.con" >> /boot/loader/loader.conf
+            '';
+          };
+          efi = {
+            canTouchEfiVariables = true;
+            efiSysMountPoint = "/boot";
+          };
         };
         tmp.cleanOnBoot = true;
         initrd.kernelModules = ["i915"];
