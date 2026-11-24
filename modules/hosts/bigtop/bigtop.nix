@@ -31,12 +31,8 @@
             editor = false;
             memtest86.enable = true;
             configurationLimit = 5;
-            extraEntries."windows.conf" = ''
-              title Windows
-              windows /EFI/Microsoft/Boot/bootmgfw.efi
-            '';
             extraInstallCommands = ''
-              echo "default windows.con" >> /boot/loader/loader.conf
+              sed -i 's|^default .*|default auto-windows|' /boot/loader/loader.conf
             '';
           };
           efi = {
@@ -49,6 +45,14 @@
       };
       networking.firewall.enable = true;
       services.openssh.enable = false;
+      services.xserver.videoDrivers = ["nvidia"];
+      hardware = {
+        graphics.enable = true;
+        nvidia = {
+          modesetting.enable = true;
+          open = true;
+        };
+      };
       sops.secrets.nas_ext_smb_credentials = {};
       users.mutableUsers = false;
       users.users.root.hashedPasswordFile = config.sops.secrets.root_password.path;
