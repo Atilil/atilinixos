@@ -115,6 +115,33 @@ in {
         };
       }
     ];
+    bigtop.includes = [
+      {
+        os = {pkgs, ...}: {
+          services.displayManager.noctalia-greeter = {
+            passwordless-sync-users = ["yoann"];
+            settings = {
+              session = {
+                default = "Hyprland (uwsm-managed)";
+                users = {
+                  yoann = "Hyprland (uwsm-managed)";
+                };
+              };
+              user.default = "yoann";
+              cursor = {
+                theme = "Nordzy-cursors";
+                size = 32;
+                path = "${pkgs.nordzy-cursor-theme}/share/icons";
+              };
+            };
+          };
+          security.pam.services.greetd = {
+            fprintAuth = false;
+            kwallet.enable = true;
+          };
+        };
+      }
+    ];
 
     ideapad.includes = [
       {
