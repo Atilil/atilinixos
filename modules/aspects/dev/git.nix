@@ -7,8 +7,8 @@ _: {
       ...
     }: let
       forgeSigningKey = config.userInfo.publicKeys.forgejo;
-      allowedSigners = "${config.xdg.configHome}/git/allowed_signers";
 
+      allowedSigners = "${config.xdg.configHome}/git/allowed_signers";
       dispatchToRepo = {
         stage,
         preCommitArgs ? "",
@@ -69,8 +69,6 @@ _: {
         gh-dash = {
           enable = true;
           settings = {
-            # user:Atilil bounds the search when launched outside a clone;
-            # inside one, smartFilteringAtLaunch narrows it to that repo.
             prSections = [
               {
                 title = "Open";
@@ -132,34 +130,26 @@ _: {
               "ssh://git@forge.macopla.com*/**"
               "https://forge.macopla.com/**"
             ];
-          # Safety net for repos without their own .pre-commit-config.yaml: gitleaks, file size, conflict markers.
-          # Opt out per repo with `git config hooks.skipGlobal true`.
           hooks.pre-commit = pkgs.writeShellScript "pre-commit" ''
             set -uo pipefail
             global_checks() {
               local fail=0
               local max_size=5242880 # 5 MiB
-
               ${pkgs.gitleaks}/bin/gitleaks git --staged --redact -v || fail=1
-
               while IFS= read -r -d "" file; do
                 [ -f "$file" ] || continue
-
                 size=$(${pkgs.coreutils}/bin/stat -c%s "$file")
                 if [ "$size" -gt "$max_size" ]; then
                   echo "pre-commit: $file is $size bytes (limit: $max_size)" >&2
                   fail=1
                 fi
-
                 if ${pkgs.gnugrep}/bin/grep -lE '^(<{7}|={7}|>{7})( |$)' "$file" >/dev/null; then
                   echo "pre-commit: merge conflict markers found in $file" >&2
                   fail=1
                 fi
               done < <(git diff --cached --name-only -z --diff-filter=ACM)
-
               return "$fail"
             }
-
             if [ -f "$(git rev-parse --show-toplevel)/.pre-commit-config.yaml" ]; then
               : # the repo's own hooks cover these checks, avoid running them twice
             elif [ "$(git config --bool hooks.skipGlobal)" = true ]; then
@@ -167,18 +157,13 @@ _: {
             else
               global_checks || exit 1
             fi
-
             ${dispatchToRepo {stage = "pre-commit";}}
           '';
-          # No global message check: repos enforce the format through pre-commit's commit-msg stage.
           hooks.commit-msg = pkgs.writeShellScript "commit-msg" ''
             set -uo pipefail
-
-            # Nothing global to skip here; the repo's own hooks still run, as in pre-commit.
             if [ "$(git config --bool hooks.skipGlobal)" = true ]; then
               echo "commit-msg: hooks.skipGlobal is set, no global checks to skip" >&2
             fi
-
             ${dispatchToRepo {
               stage = "commit-msg";
               preCommitArgs = ''--commit-msg-filename "$1"'';

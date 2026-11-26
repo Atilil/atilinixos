@@ -5,9 +5,6 @@ _: {
     config,
     ...
   }: let
-    # Answers rbw's pinentry from gnome-keyring (unlocked by PAM at login);
-    # falls back to pinentry-qt once to store the master password.
-    # Not shipped by the nixpkgs rbw package.
     rbwPinentryKeyring =
       pkgs.runCommand "rbw-pinentry-keyring" {
         src = pkgs.fetchurl {
