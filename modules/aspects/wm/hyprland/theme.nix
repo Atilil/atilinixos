@@ -18,7 +18,7 @@ _: {
     gtk = {
       enable = true;
       gtk4.theme = null;
-      gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
+      colorScheme = "dark";
       theme = {
         package = pkgs.adw-gtk3;
         name = "adw-gtk3-dark";
