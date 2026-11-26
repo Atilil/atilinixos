@@ -1,5 +1,5 @@
 _: {
-  den.aspects.hyprland.homeManager = _: {
+  den.aspects.noctalia.homeManager = _: {
     programs.noctalia.settings = {
       plugins = {
         source = [

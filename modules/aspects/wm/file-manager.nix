@@ -4,15 +4,9 @@ _: {
       services = {
         udisks2.enable = true;
         gvfs.enable = true;
-        gnome.sushi.enable = true;
       };
-      programs = {
-        gnome-disks.enable = true;
-        nautilus-open-any-terminal.enable = true;
-        nautilus-open-any-terminal.terminal = "kitty";
-      };
+      programs.gnome-disks.enable = true;
       environment.systemPackages = with pkgs; [
-        nautilus
         loupe
         celluloid
         glib
@@ -36,7 +30,6 @@ _: {
         "video/webm" = "io.github.celluloid_player.Celluloid.desktop";
         "video/avi" = "io.github.celluloid_player.Celluloid.desktop";
         "video/quicktime" = "io.github.celluloid_player.Celluloid.desktop";
-        "inode/directory" = "org.gnome.Nautilus.desktop";
         "application/zip" = "org.gnome.FileRoller.desktop";
         "application/x-tar" = "org.gnome.FileRoller.desktop";
         "application/x-compressed-tar" = "org.gnome.FileRoller.desktop";

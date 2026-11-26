@@ -1,8 +1,10 @@
-_: {
+{inputs, ...}: {
   flake-file.inputs.noctalia.url = "github:noctalia-dev/noctalia/cachix";
-  den.aspects.hyprland.homeManager = {config, ...}: let
+  den.aspects.noctalia.homeManager = {config, ...}: let
     home = config.home.homeDirectory;
   in {
+    imports = [inputs.noctalia.homeModules.default];
+
     programs.noctalia = {
       enable = true;
       systemd.enable = true;
@@ -47,9 +49,10 @@ _: {
 
         # Which apps Noctalia themes; each needs its own wiring (see btop.nix,
         # messaging.nix, theme.nix). The palette itself is picked in the GUI.
+        # Compositor templates are added by the compositor aspect (hyprland/theme.nix).
         theme.templates = {
-          builtin_ids = ["btop" "gtk3" "gtk4" "hyprland" "kitty" "qt" "starship"];
-          community_ids = ["zen-browser" "telegram" "neovim" "zed" "steam" "thunderbird" "hyprtoolkit" "yazi"];
+          builtin_ids = ["btop" "gtk3" "gtk4" "kitty" "luciole" "qt" "starship"];
+          community_ids = ["zen-browser" "telegram" "neovim" "zed" "steam" "thunderbird" "yazi"];
         };
 
         idle = {

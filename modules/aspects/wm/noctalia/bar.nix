@@ -1,5 +1,5 @@
 _: {
-  den.aspects.hyprland.homeManager = _: {
+  den.aspects.noctalia.homeManager = _: {
     programs.noctalia.settings = {
       bar = {
         order = ["default"];
@@ -33,7 +33,10 @@ _: {
           empty_color = "tertiary";
           scale = 1.25;
         };
-        tray.drawer = true;
+        tray = {
+          drawer = true;
+          pinned = ["Bitwarden"];
+        };
         network.show_label = false;
         battery = {
           display_mode = "graphic";

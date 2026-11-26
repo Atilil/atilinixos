@@ -1,5 +1,10 @@
-{inputs, ...}: {
+{den, ...}: {
   den.aspects.hyprland = {
+    includes = [
+      den.aspects.luciole
+      den.aspects.noctalia
+    ];
+
     os = {pkgs, ...}: {
       programs.hyprland = {
         enable = true;
@@ -26,8 +31,6 @@
     };
 
     homeManager = {pkgs, ...}: {
-      imports = [inputs.noctalia.homeModules.default];
-
       home.packages = [pkgs.wl-clipboard];
 
       wayland.windowManager.hyprland = {

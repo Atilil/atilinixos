@@ -23,6 +23,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     import-tree.url = "github:vic/import-tree/v0.3.0";
+    luciole.url = "github:noctalia-dev/luciole/cachix";
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
