@@ -1,9 +1,16 @@
 {inputs, ...}: {
   flake-file.inputs.noctalia.url = "github:noctalia-dev/noctalia/cachix";
-  den.aspects.noctalia.homeManager = {config, ...}: let
+  den.aspects.noctalia.homeManager = {
+    config,
+    pkgs,
+    ...
+  }: let
     home = config.home.homeDirectory;
   in {
     imports = [inputs.noctalia.homeModules.default];
+
+    # Clipboard history watches through wl-paste (cliphist store)
+    home.packages = [pkgs.wl-clipboard];
 
     programs.noctalia = {
       enable = true;

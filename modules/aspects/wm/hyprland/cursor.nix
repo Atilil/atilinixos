@@ -1,14 +1,9 @@
 _: {
-  den.aspects.hyprland.homeManager = {pkgs, ...}: {
-    home.pointerCursor = {
-      package = pkgs.nordzy-cursor-theme;
-      name = "Nordzy-cursors";
-      size = 32;
-      gtk.enable = true;
-    };
+  # The XCursor theme itself is set in the desktop-theme aspect.
+  den.aspects.hyprland.homeManager = {config, ...}: {
     xdg.configFile."uwsm/env".text = ''
       export HYPRCURSOR_THEME=Nordzy-hyprcursors
-      export HYPRCURSOR_SIZE=32
+      export HYPRCURSOR_SIZE=${toString config.home.pointerCursor.size}
     '';
   };
 }

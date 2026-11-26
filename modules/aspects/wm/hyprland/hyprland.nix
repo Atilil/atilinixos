@@ -1,6 +1,7 @@
 {den, ...}: {
   den.aspects.hyprland = {
     includes = [
+      den.aspects.desktop-theme
       den.aspects.luciole
       den.aspects.noctalia
     ];
@@ -30,9 +31,7 @@
       };
     };
 
-    homeManager = {pkgs, ...}: {
-      home.packages = [pkgs.wl-clipboard];
-
+    homeManager = {
       wayland.windowManager.hyprland = {
         enable = true;
         configType = "lua";
