@@ -27,6 +27,8 @@
     "x-systemd.automount"
     "x-systemd.idle-timeout=600"
     "x-systemd.mount-timeout=15"
+    # gvfs hides fstab mounts outside /media and ~: list them in file manager sidebars
+    "x-gvfs-show"
   ];
   nfsOptions =
     commonOptions
