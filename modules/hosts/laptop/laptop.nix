@@ -28,7 +28,6 @@
     }: {
       imports = [
         ./_hardware.nix
-        ./_file-system.nix
       ];
 
       boot = {
