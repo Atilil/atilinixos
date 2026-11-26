@@ -34,5 +34,19 @@ _: {
       "application/x-rar" = ark;
       "application/pdf" = "org.pwmt.zathura.desktop";
     };
+
+    # GTK file chooser (open/save dialogs, also behind the GTK portal). Sort column
+    # and window geometry are left to the dialog, which rewrites them on every use.
+    dconf.settings = let
+      chooser = {
+        show-hidden = true;
+        sort-directories-first = true;
+        location-mode = "path-bar";
+        date-format = "regular";
+      };
+    in {
+      "org/gtk/settings/file-chooser" = chooser;
+      "org/gtk/gtk4/settings/file-chooser" = chooser // {view-type = "list";};
+    };
   };
 }
