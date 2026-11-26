@@ -93,6 +93,10 @@
   "awaySummaryEnabled": false,
   "theme": "dark",
   "editorMode": "vim",
+  "verbose": true,
+  "preferredNotifChannel": "notifications_disabled",
   "autoCompactEnabled": true,
-  "idleCompaction": false
+  "idleCompaction": false,
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true
 }
