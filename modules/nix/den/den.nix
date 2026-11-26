@@ -4,7 +4,7 @@
   inputs,
   ...
 }: let
-  # Single source of truth for hosts and users
+  flakePath = "/home/yoann/Projets/nixos";
   fleet = {
     x86_64-linux = {
       laptop = ["yoann" "audrey"];
@@ -12,24 +12,6 @@
       bigtop = ["yoann"];
     };
   };
-
-  # Shared by NixOS and standalone HM
-  nixpkgsConfig = {
-    allowUnfree = true;
-  };
-
-  # Exposes nixpkgs-unstable as pkgs.unstable.<pkg> (usage: programs.foo.package = pkgs.unstable.foo).
-  # Imported rather than legacyPackages so allowUnfree applies.
-  unstableOverlay = _: prev: {
-    unstable = import inputs.nixpkgs-unstable {
-      system = prev.stdenv.hostPlatform.system;
-      config = nixpkgsConfig;
-    };
-  };
-
-  # Local flake checkout, same path on every fleet host. Exposed as flake.lib.flakePath
-  # and injected as the `flakePath` module arg in both os and homeManager classes.
-  flakePath = "/home/yoann/Projets/nixos";
 
   # mkHosts: ["u1" "u2"] -> { users = { u1 = {}; u2 = {}; }; }
   # mkHomes: "host" ["u1" "u2"] -> { "u1@host" = {}; "u2@host" = {}; }
@@ -40,6 +22,18 @@
     names = map (u: "${u}@${host}") users;
   in
     lib.genAttrs names (_: {});
+
+  # Exposes nixpkgs-unstable as pkgs.unstable.<pkg> (usage: programs.foo.package = pkgs.unstable.foo).
+  # Imported rather than legacyPackages so allowUnfree applies.
+  unstableOverlay = _: prev: {
+    unstable = import inputs.nixpkgs-unstable {
+      system = prev.stdenv.hostPlatform.system;
+      config = nixpkgsConfig;
+    };
+  };
+  nixpkgsConfig = {
+    allowUnfree = true;
+  };
 in {
   flake.lib = {
     inherit flakePath;
@@ -51,14 +45,8 @@ in {
     default = {
       os = _: {
         _module.args.flakePath = flakePath;
-
-        # WARNING: set at the initial installation, never change
-        system.stateVersion = "25.11";
-
-        # Integrated HM inherits this; standalone HM redeclares it below
+        system.stateVersion = "25.11"; # WARNING: set at the initial installation, never change
         nixpkgs.config = nixpkgsConfig;
-
-        # pkgs.unstable.<pkg> for every NixOS module (and integrated HM via useGlobalPkgs)
         nixpkgs.overlays = [unstableOverlay];
       };
 
@@ -68,10 +56,7 @@ in {
         ...
       }: {
         _module.args.flakePath = flakePath;
-
-        # WARNING: set at the initial installation, never change
-        home.stateVersion = "25.11";
-
+        home.stateVersion = "25.11"; # WARNING: set at the initial installation, never change
         # Integrated HM inherits nixpkgs from NixOS; standalone HM needs its own config.
         # HACK: den's insecureModule keys on osConfig.useGlobalPkgs, which is true for standalone HM too,
         # so it skips the standalone nixpkgs; re-emit the battery value here.
@@ -81,21 +66,16 @@ in {
             permittedInsecurePackages = config.permittedInsecurePackages.packages or [];
           }
         );
-
         # Standalone HM only: integrated HM inherits overlays from NixOS above
         nixpkgs.overlays = lib.mkIf (!config.submoduleSupport.enable) [unstableOverlay];
       };
     };
 
     schema = {
-      # Home Manager for every user, unless a user's classes say otherwise
-      user.classes = lib.mkDefault ["homeManager"];
-
-      # Aspects common to all entities (hosts, users, homes)
-      conf.includes = [];
-
-      # Aspects common to all hosts: add here instead of repeating in each host
+      user.classes = lib.mkDefault ["homeManager"]; # Home Manager for every user, unless a user's classes say otherwise
+      conf.includes = []; # Aspects common to all entities (hosts, users, homes)
       host.includes = with den; [
+        # Aspects common to all hosts: add here instead of repeating in each host
         aspects.home-manager
         aspects.plymouth
         # Users' system content (nixos/os, provides.to-hosts) reaches their hosts only on opt-in
