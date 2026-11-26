@@ -33,7 +33,7 @@ in {
         enable = true;
 
         # Adds a keyboard layout indicator and per-user sessions ([session.users]).
-        package = patchedGreeter pkgs [./_greeter/layout-user-session.patch];
+        package = patchedGreeter pkgs [./greeter/layout-user-session.patch];
 
         settings = {
           # Reuse the system XKB layout from the clavier aspect.
@@ -195,8 +195,8 @@ in {
           # ideapad.patch hides the session selector, which upstream cannot do by option.
           services.displayManager.noctalia-greeter = {
             package = lib.mkForce (patchedGreeter pkgs [
-              ./_greeter/layout-user-session.patch
-              ./_greeter/ideapad.patch
+              ./greeter/layout-user-session.patch
+              ./greeter/ideapad.patch
             ]);
 
             settings = {

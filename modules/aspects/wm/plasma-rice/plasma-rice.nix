@@ -47,7 +47,7 @@ _: {
       # Music Waves widget (KDE Store p/2186442, GPL-3.0+): no public repo, vendored.
       musicWaves = pkgs.runCommand "plasma-applet-musicwaves-0.1" {} ''
         mkdir -p $out/share/plasma/plasmoids
-        cp -r ${./_plasmoids/Music.Waves} $out/share/plasma/plasmoids/Music.Waves
+        cp -r ${./plasmoids/Music.Waves} $out/share/plasma/plasmoids/Music.Waves
       '';
     in {
       home.packages = [modernClock musicWaves sweetDecoration];

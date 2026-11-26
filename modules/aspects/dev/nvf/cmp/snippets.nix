@@ -1,11 +1,11 @@
 _: {
   den.aspects.nvf.homeManager = {pkgs, ...}: let
-    # Custom snippets live as plain text files in _snippets/, split by format:
+    # Custom snippets live as plain text files in snippets/, split by format:
     #   snipmate/*.snippets  -> declarative SnipMate (loaded from `snippets/`)
     #   lua/*.lua            -> programmatic LuaSnip (loaded from `luasnippets/`)
     snippetsSrc = builtins.path {
       name = "nvf-snippets-src";
-      path = ./_snippets;
+      path = ./snippets;
     };
 
     customSnippets = pkgs.runCommandLocal "nvf-custom-snippets" {} ''
