@@ -8,7 +8,7 @@
     };
 
   inputs = {
-    den.url = "github:denful/den";
+    den.url = "github:denful/den/v0.20.0";
     flake-file.url = "github:vic/flake-file";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";

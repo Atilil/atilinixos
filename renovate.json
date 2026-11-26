@@ -8,5 +8,39 @@
     "schedule": [
       "* 2 * * *"
     ]
-  }
+  },
+  "customManagers": [
+    {
+      "description": "Inputs annotés dans les modules flake-file : # renovate: datasource=… depName=… au-dessus de la ligne url",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^modules/.+\\.nix$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[\\w.-]+\\s*=\\s*\"github:[^/]+/[^/]+/(?<currentValue>[^\"?]+)\""
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "flake.nix est généré : régénérer flake.nix et flake.lock après la montée d'un input annoté",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchFileNames": [
+        "modules/**/*.nix"
+      ],
+      "postUpgradeTasks": {
+        "commands": [
+          "nix --extra-experimental-features 'nix-command flakes' run .#write-flake",
+          "nix --extra-experimental-features 'nix-command flakes' flake lock"
+        ],
+        "fileFilters": [
+          "flake.nix",
+          "flake.lock"
+        ],
+        "executionMode": "branch"
+      }
+    }
+  ]
 }
