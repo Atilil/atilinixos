@@ -9,7 +9,6 @@ in {
   den.aspects.yoann = {
     includes = with den; [
       batteries.primary-user
-      (batteries.import-tree ./hm)
       (batteries.user-shell "zsh")
       aspects.shell
       aspects.hyprland

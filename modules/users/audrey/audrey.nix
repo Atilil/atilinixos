@@ -1,7 +1,6 @@
 {den, ...}: {
   den.aspects.audrey = {
     includes = with den; [
-      (batteries.import-tree ./hm)
       aspects.shell
       aspects.thunderbird
       aspects.bitwarden

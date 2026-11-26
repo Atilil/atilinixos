@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 14,
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:flake.parts)",
+      "WebFetch(domain:nixos.org)",
+      "WebFetch(domain:wiki.nixos.org)",
+      "WebFetch(domain:search.nixos.org)",
+      "WebFetch(domain:discourse.nixos.org)",
+      "WebFetch(domain:home-manager-options.extranix.com)",
+      "WebFetch(domain:noogle.dev)",
+      "WebFetch(domain:nix.dev)",
+      "WebFetch(domain:talks.nixcon.org)",
+      "WebFetch(domain:vic.github.io)",
+      "WebFetch(domain:import-tree.oeiuwq.com)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gitlab.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:gist.github.com)",
+      "WebSearch",
+      "Bash(obsidian-cli:*)"
+    ],
+    "deny": [
+      "Read(/home/yoann/.config/sops/age/keys.txt)",
+      "Read(/home/yoann/.ssh/id_*)",
+      "Read(/home/yoann/.bitwarden-ssh-agent.sock)",
+      "Read(**/secrets.yaml)",
+      "Edit(/etc/**)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(rm -rf:*)",
+      "Bash(gh pr create:*)",
+      "Bash(glab mr create:*)",
+      "Bash(nh os boot:*)",
+      "Bash(sudo:*)"
+    ],
+    "defaultMode": "default"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yoann/.claude/hooks/block-flake-nix.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-comment-guard"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yoann/.claude/hooks/alejandra-format.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "claude-hud",
+    "padding": 0
+  },
+  "outputStyle": "Explanatory",
+  "language": "French",
+  "effortLevel": "high",
+  "awaySummaryEnabled": false,
+  "theme": "dark",
+  "editorMode": "vim",
+  "autoCompactEnabled": true,
+  "idleCompaction": false
+}

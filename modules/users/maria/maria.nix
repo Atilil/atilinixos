@@ -1,7 +1,6 @@
 {den, ...}: {
   den.aspects.maria = {
     includes = with den; [
-      (batteries.import-tree ./hm)
       aspects.plasma
       aspects.plasma-rice
       aspects.plasma-layout
