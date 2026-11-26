@@ -5,7 +5,7 @@ _: {
       kdePackages.ark
       kdePackages.filelight
       haruna
-      zathura
+      kdePackages.okular
     ];
 
     xdg.mimeApps.defaultApplications = let
@@ -30,7 +30,7 @@ _: {
       "application/x-compressed-tar" = ark;
       "application/x-7z-compressed" = ark;
       "application/x-rar" = ark;
-      "application/pdf" = "org.pwmt.zathura.desktop";
+      "application/pdf" = "org.kde.okular.desktop";
     };
   };
 }
