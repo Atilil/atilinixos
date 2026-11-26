@@ -24,7 +24,7 @@ _: {
     programs.rbw = {
       enable = true;
       settings = {
-        email = config.userInfo.emails.admin;
+        email = config.userInfo.emails.primary;
         base_url = "https://vault.macopla.com/";
         pinentry = rbwPinentryKeyring;
         lock_timeout = 86400;
