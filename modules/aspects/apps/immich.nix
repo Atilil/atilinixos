@@ -7,7 +7,6 @@ _: {
   in {
     # Immich logo in hicolor (fallback of every icon theme).
     xdg.dataFile."icons/hicolor/scalable/apps/immich.svg".source = immichLogo;
-
     # No Linux Immich client: web app in a Helium --app window (no tabs/address bar).
     # TODO: StartupWMClass is unverified on Helium/Wayland; check if the window
     # is not grouped under its pinned launcher.

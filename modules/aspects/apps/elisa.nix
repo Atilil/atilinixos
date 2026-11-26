@@ -1,6 +1,6 @@
 _: {
   den.aspects.elisa.homeManager = {pkgs, ...}: {
-    # Audio desktop player for mom
+    # Audio desktop player
     home.packages = [pkgs.kdePackages.elisa];
   };
 }
