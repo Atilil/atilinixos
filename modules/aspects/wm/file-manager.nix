@@ -1,4 +1,6 @@
 _: {
+  # Host plumbing only: mounting, trash, filesystems, thumbnails. Apps and file
+  # associations are per user (desktop-apps aspect, Plasma defaults for KDE users).
   den.aspects.file-manager = {
     os = {pkgs, ...}: {
       services = {
@@ -7,36 +9,11 @@ _: {
       };
       programs.gnome-disks.enable = true;
       environment.systemPackages = with pkgs; [
-        loupe
-        celluloid
         glib
         ffmpegthumbnailer
         exfatprogs
         ntfs3g
-        baobab
-        file-roller
-        zathura
       ];
-      xdg.mime.defaultApplications = {
-        "image/png" = "org.gnome.Loupe.desktop";
-        "image/jpeg" = "org.gnome.Loupe.desktop";
-        "image/gif" = "org.gnome.Loupe.desktop";
-        "image/webp" = "org.gnome.Loupe.desktop";
-        "image/svg+xml" = "org.gnome.Loupe.desktop";
-        "image/bmp" = "org.gnome.Loupe.desktop";
-        "image/tiff" = "org.gnome.Loupe.desktop";
-        "video/mp4" = "io.github.celluloid_player.Celluloid.desktop";
-        "video/x-matroska" = "io.github.celluloid_player.Celluloid.desktop";
-        "video/webm" = "io.github.celluloid_player.Celluloid.desktop";
-        "video/avi" = "io.github.celluloid_player.Celluloid.desktop";
-        "video/quicktime" = "io.github.celluloid_player.Celluloid.desktop";
-        "application/zip" = "org.gnome.FileRoller.desktop";
-        "application/x-tar" = "org.gnome.FileRoller.desktop";
-        "application/x-compressed-tar" = "org.gnome.FileRoller.desktop";
-        "application/x-7z-compressed" = "org.gnome.FileRoller.desktop";
-        "application/x-rar" = "org.gnome.FileRoller.desktop";
-        "application/pdf" = "org.gnome.zathura.desktop";
-      };
     };
   };
 }

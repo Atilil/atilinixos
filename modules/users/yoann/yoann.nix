@@ -21,6 +21,7 @@ in {
       aspects.bitwarden
       aspects.webos
       aspects.remmina
+      aspects.desktop-apps
       # aspects.vial
     ];
 
