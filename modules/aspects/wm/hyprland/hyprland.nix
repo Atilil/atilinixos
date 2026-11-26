@@ -14,6 +14,12 @@
 
       environment.systemPackages = with pkgs; [qt5.qtwayland qt6.qtwayland];
 
+      # Replaces the packaged hyprland-portals.conf as a whole: keep its default line
+      xdg.portal.config.hyprland = {
+        default = ["hyprland" "gtk"];
+        "org.freedesktop.impl.portal.FileChooser" = ["luciole" "gtk"];
+      };
+
       # KDE Connect (Valent) ports
       networking.firewall = {
         allowedTCPPortRanges = [

@@ -10,4 +10,9 @@
 
     xdg.mimeApps.defaultApplications."inode/directory" = "dev.noctalia.luciole.desktop";
   };
+
+  # FileChooser portal backend; each compositor aspect selects it in its portals config
+  den.aspects.luciole.os = {pkgs, ...}: {
+    xdg.portal.extraPortals = [inputs.luciole.packages.${pkgs.stdenv.hostPlatform.system}.default];
+  };
 }
