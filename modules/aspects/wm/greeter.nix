@@ -8,7 +8,8 @@ in {
   # host so the greeter loads the system mesa drivers without ABI mismatch; the
   # package is small, so the lost upstream binary cache costs one local build.
   flake-file.inputs.noctalia-greeter = {
-    url = "github:noctalia-dev/noctalia-greeter";
+    # renovate: datasource=github-tags depName=noctalia-dev/noctalia-greeter
+    url = "github:noctalia-dev/noctalia-greeter/v1.7.1";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 

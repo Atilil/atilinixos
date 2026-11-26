@@ -1,5 +1,7 @@
-_: {
-  den.aspects.nvf.homeManager = _: {
+{inputs, ...}: {
+  den.aspects.nvf.homeManager = _: let
+    inherit (inputs.nvf.lib.nvim.dag) entryBefore;
+  in {
     programs.nvf.settings.vim.visuals.rainbow-delimiters = {
       enable = true;
       setupOpts.highlight = [
@@ -13,7 +15,9 @@ _: {
       ];
     };
 
-    programs.nvf.settings.vim.luaConfigRC.rainbow-delimiters-highlights = ''
+    # ibl.setup (pluginConfigs) errors if its highlight groups don't exist yet,
+    # and ibl hooks must be registered before setup.
+    programs.nvf.settings.vim.luaConfigRC.rainbow-delimiters-highlights = entryBefore ["pluginConfigs"] ''
       local function set_rainbow_hl()
         vim.api.nvim_set_hl(0, "RainbowDelimiterRed", { fg = "#E06C75" })
         vim.api.nvim_set_hl(0, "RainbowDelimiterYellow", { fg = "#E5C07B" })

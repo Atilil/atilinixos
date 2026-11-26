@@ -9,7 +9,7 @@
 
   inputs = {
     den.url = "github:denful/den/v0.20.0";
-    flake-file.url = "github:vic/flake-file";
+    flake-file.url = "github:vic/flake-file/v0.7.0";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -22,7 +22,7 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    import-tree.url = "github:vic/import-tree";
+    import-tree.url = "github:vic/import-tree/v0.3.0";
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -31,11 +31,11 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     noctalia.url = "github:noctalia-dev/noctalia/cachix";
     noctalia-greeter = {
-      url = "github:noctalia-dev/noctalia-greeter";
+      url = "github:noctalia-dev/noctalia-greeter/v1.7.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nvf = {
-      url = "github:NotAShelf/nvf";
+      url = "github:NotAShelf/nvf/v26.07";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     plasma-manager = {

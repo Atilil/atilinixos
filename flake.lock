@@ -34,15 +34,16 @@
     },
     "flake-file": {
       "locked": {
-        "lastModified": 1792905615,
-        "narHash": "sha256-KdGEzlRQPHBbNPD+AChjry8eWEx0TCrGKy1Hkacj+bA=",
+        "lastModified": 1791840448,
+        "narHash": "sha256-u10FOsDRA1GMRcn1+hYf2eD1K+LP/F9/+AeErkKraPg=",
         "owner": "vic",
         "repo": "flake-file",
-        "rev": "7b08dbc223bb1a758a515aad9653a6bf196bc772",
+        "rev": "d3600508b0b031221459f7358ab88c438a81ac83",
         "type": "github"
       },
       "original": {
         "owner": "vic",
+        "ref": "v0.7.0",
         "repo": "flake-file",
         "type": "github"
       }
@@ -120,17 +121,18 @@
       },
       "original": {
         "owner": "vic",
+        "ref": "v0.3.0",
         "repo": "import-tree",
         "type": "github"
       }
     },
     "mnw": {
       "locked": {
-        "lastModified": 1784154424,
-        "narHash": "sha256-HRn4O1X2ShYtbq5Egji72/aemyc2cIQicjRZD9hBqM8=",
+        "lastModified": 1780772958,
+        "narHash": "sha256-VKKe8r4pwCGWZ3Yr9CPN129R4S3CKLSrlYqdYz3vKpM=",
         "owner": "Gerg-L",
         "repo": "mnw",
-        "rev": "0151d9fa87992cbeb67c86616fb9170dcec830b6",
+        "rev": "0871dbf63a53610c95db04439ed8ea4d6ec9c160",
         "type": "github"
       },
       "original": {
@@ -230,15 +232,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1795324754,
-        "narHash": "sha256-uH+Sdn6gsVMB0hDJxtZ8fPMW+a0r22y9w9T7hbMf+hw=",
+        "lastModified": 1795183913,
+        "narHash": "sha256-6ojA9tFyaZO+jczG0KCP42xvCMbKVd5WLaAWvc5QGjA=",
         "owner": "noctalia-dev",
         "repo": "noctalia-greeter",
-        "rev": "ec778fcba85ea07e94213939d11baabcd009817d",
+        "rev": "2726e75375d95d5458d021f76c330ab14f6a5d03",
         "type": "github"
       },
       "original": {
         "owner": "noctalia-dev",
+        "ref": "v1.7.1",
         "repo": "noctalia-greeter",
         "type": "github"
       }
@@ -252,15 +255,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1794941510,
-        "narHash": "sha256-iZtLZ2bh2F1dvxiYYQNhXZTy7c2Lw9DpkD+Laq/pcog=",
+        "lastModified": 1785074026,
+        "narHash": "sha256-Y7YR0TMK+34pCV7PJZNVphIckdga4f9dO4+ORfYpNFk=",
         "owner": "NotAShelf",
         "repo": "nvf",
-        "rev": "f6a21f9c22e9ddf9cf88f9faf31d82985058ba14",
+        "rev": "3d8c91925ea9b6bb70dcdaa4544cd12a95194fc5",
         "type": "github"
       },
       "original": {
         "owner": "NotAShelf",
+        "ref": "v26.07",
         "repo": "nvf",
         "type": "github"
       }

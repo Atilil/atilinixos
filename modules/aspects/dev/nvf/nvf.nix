@@ -4,7 +4,8 @@
   ...
 }: {
   flake-file.inputs.nvf = {
-    url = "github:NotAShelf/nvf";
+    # renovate: datasource=github-tags depName=NotAShelf/nvf
+    url = "github:NotAShelf/nvf/v26.07";
     inputs.nixpkgs.follows = "nixpkgs";
   };
   den.aspects.dev = {
@@ -17,7 +18,7 @@
       pkgs,
       ...
     }: {
-      imports = [inputs.nvf.homeModules.default];
+      imports = [inputs.nvf.homeManagerModules.default];
 
       programs.nvf = {
         enable = true;
