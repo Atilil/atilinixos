@@ -7,6 +7,7 @@
       aspects.remote-access
       aspects.bitwarden
       aspects.thunderbird
+      aspects.whatsapp
       aspects.office
       aspects.jellyfin
       aspects.elisa

@@ -3,6 +3,7 @@
     includes = with den; [
       aspects.shell
       aspects.thunderbird
+      aspects.whatsapp
       aspects.bitwarden
       aspects.plasma
       aspects.plasma-rice

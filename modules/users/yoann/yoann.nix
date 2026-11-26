@@ -17,6 +17,7 @@ in {
       aspects.obsidian
       aspects.taskwarrior
       aspects.messaging
+      aspects.thunderbird
       aspects.bitwarden
       aspects.webos
       aspects.remmina

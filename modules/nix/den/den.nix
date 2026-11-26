@@ -90,7 +90,6 @@ in {
         aspects.browser
         aspects.userDirs
         aspects.userInfo
-        aspects.whatsapp
       ];
 
       # Aspects common to all standalone HM configs
