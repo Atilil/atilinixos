@@ -192,11 +192,11 @@ in {
           # Unlock KWallet at login (plasma6 only wires `login`); needs identical passwords.
           security.pam.services.greetd.kwallet.enable = true;
 
-          # ideapad.patch hides the session selector, which upstream cannot do by option.
+          # hide-single-session.patch hides the session selector, which upstream cannot do by option.
           services.displayManager.noctalia-greeter = {
             package = lib.mkForce (patchedGreeter pkgs [
               ./greeter/layout-user-session.patch
-              ./greeter/ideapad.patch
+              ./greeter/hide-single-session.patch
             ]);
 
             settings = {
