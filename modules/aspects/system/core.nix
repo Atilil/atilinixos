@@ -25,11 +25,6 @@ _: {
           ];
         };
         extraOptions = "warn-dirty = false";
-        gc = {
-          automatic = true;
-          dates = "weekly";
-          persistent = true;
-        };
       };
 
       boot.kernel.sysctl = {
@@ -40,6 +35,14 @@ _: {
       programs = {
         nix-ld.enable = true;
         appimage.enable = true;
+
+        # Runs `nh clean all` as root: prunes system and user generations, then GCs.
+        # Replaces nix.gc, which never deletes generations, so their closures stayed alive.
+        nh.clean = {
+          enable = true;
+          dates = "daily";
+          extraArgs = "--keep 5 --keep-since 3d";
+        };
       };
 
       networking.networkmanager = {
