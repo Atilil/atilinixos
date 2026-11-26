@@ -23,6 +23,11 @@
       # maria's folders living on the HDD (bind-mounted below).
       dataDirs = ["Desktop" "Documents" "Downloads" "Music" "Pictures" "Videos"];
     in {
+      machine.screen = {
+        width = 1600;
+        height = 900;
+      };
+
       imports = [./_hardware.nix];
 
       boot.loader = {

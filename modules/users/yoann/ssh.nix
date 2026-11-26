@@ -1,5 +1,7 @@
 _: {
   den.aspects.yoann.homeManager = {config, ...}: {
+    home.sessionVariables.SSH_AUTH_SOCK = "${config.home.homeDirectory}/.bitwarden-ssh-agent.sock";
+
     # OpenSSH reads the public file to pick which key to ask the agent for
     home.file = {
       ".ssh/forgejo.pub".text = "${config.userInfo.publicKeys.forgejo}";

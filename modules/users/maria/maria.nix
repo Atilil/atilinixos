@@ -12,19 +12,13 @@
       aspects.jellyfin
       aspects.elisa
       aspects.immich
+      aspects.family-desktop
     ];
-
-    homeManager = _: {
-      userInfo.realName = "Maria";
-      plasmaLayout.screen = {
-        width = 1600;
-        height = 900;
-      };
-    };
 
     user = {
       description = "Maria";
       extraGroups = ["networkmanager" "wheel"];
     };
+    homeManager.userInfo.realName = "Maria";
   };
 }

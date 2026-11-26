@@ -1,29 +1,21 @@
 _: {
   # Shared Plasma layout (panels, widgets); the look is plasma-rice.
   den.aspects.plasma-layout.homeManager = {
-    config,
+    osConfig,
     lib,
     pkgs,
     ...
   }: let
-    # Desktop widgets are placed on screen 0, centred for its resolution (Plasma snaps to 16 px).
-    scr = config.plasmaLayout.screen;
+    # Desktop widgets are placed on screen 0, centred for the host's resolution (Plasma snaps to 16 px).
+    scr = lib.throwIf (osConfig.machine.screen == null) "plasma-layout: set machine.screen on this host" osConfig.machine.screen;
     snap = v: (v + 8) / 16 * 16;
     dy = (scr.height - 900) / 2;
     dx = (scr.width - 1600) / 2;
   in {
-    options.plasmaLayout.screen = {
-      width = lib.mkOption {
-        type = lib.types.int;
-        description = "Resolution of the screen holding the desktop widgets.";
-      };
-      height = lib.mkOption {type = lib.types.int;};
-    };
-
     # Dolphin and Gwenview are pinned in the dock below.
-    config.home.packages = with pkgs.kdePackages; [dolphin gwenview];
+    home.packages = with pkgs.kdePackages; [dolphin gwenview];
 
-    config.programs.plasma = {
+    programs.plasma = {
       # Re-applied when this config changes. Offsets are maria's layout on 1600x900.
       desktop.widgets = [
         {

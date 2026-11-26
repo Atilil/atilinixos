@@ -12,17 +12,15 @@
       aspects.jellyfin
       aspects.elisa
       aspects.immich
+      aspects.family-desktop
     ];
 
-    homeManager = _: {
-      # Laptop panel (eDP-1); the dock and top panel go on every screen.
-      plasmaLayout.screen = {
-        width = 1920;
-        height = 1080;
-      };
-      # French ISO only (the system keeps yoann's us,fr).
+    user = {config, ...}: {
+      hashedPasswordFile = config.sops.secrets.audrey_password.path;
+      extraGroups = ["networkmanager"];
+    };
+    homeManager = {
       programs.plasma.input.keyboard.layouts = [{layout = "fr";}];
-
       userInfo = {
         realName = "Audrey";
         emails = {
@@ -32,11 +30,6 @@
           instagram = "green.beauty.girondine" + "@" + "gmail.com";
         };
       };
-    };
-
-    user = {config, ...}: {
-      hashedPasswordFile = config.sops.secrets.audrey_password.path;
-      extraGroups = ["networkmanager"];
     };
   };
 }
