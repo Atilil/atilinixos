@@ -45,8 +45,13 @@
             editor = false;
             memtest86.enable = true;
             configurationLimit = 5;
+            extraEntries."windows.conf" = ''
+              title Windows 11
+              efi /EFI/Microsoft/Boot/bootmgfw.efi
+              sort-key a_windows
+            '';
             extraInstallCommands = ''
-              sed -i 's|^default .*|default auto-windows|' /boot/loader/loader.conf
+              ${pkgs.gnused}/bin/sed -i 's|^default .*|default windows.conf|' /boot/loader/loader.conf
             '';
           };
           efi = {
